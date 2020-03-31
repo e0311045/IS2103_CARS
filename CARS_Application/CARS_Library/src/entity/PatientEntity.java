@@ -1,10 +1,13 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -36,10 +39,26 @@ public class PatientEntity implements Serializable {
     private String phone;
     @Column(length = 50, nullable = false, unique = false)
     private String address;
-    @OneToMany
-    @JoinColumn(nullable = false)
-    private AppointmentEntity appointments;
+    
+    @OneToMany(mappedBy = "patientEntity", fetch = FetchType.LAZY)
+    private List<AppointmentEntity> appointments;
 
+    public PatientEntity() {
+    }
+
+    public PatientEntity(String identityNo, String password, String firstName, String lastName, Gender gender, int age, String phone, String address) {
+        this.identityNo = identityNo;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.gender = gender;
+        this.age = age;
+        this.phone = phone;
+        this.address = address;
+    }
+
+    
+    
     public Long getPatientId() {
         return patientId;
     }
@@ -183,6 +202,20 @@ public class PatientEntity implements Serializable {
      */
     public void setGender(Gender gender) {
         this.gender = gender;
+    }
+
+    /**
+     * @return the appointments
+     */
+    public List<AppointmentEntity> getAppointments() {
+        return appointments;
+    }
+
+    /**
+     * @param appointments the appointments to set
+     */
+    public void setAppointments(List<AppointmentEntity> appointments) {
+        this.appointments = appointments;
     }
     
 }

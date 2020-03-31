@@ -2,8 +2,10 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -24,10 +26,21 @@ public class DoctorEntity implements Serializable {
     private String registration;
     @Column(length = 10, nullable = false, unique = false)
     private String qualifications;
-    @OneToMany
-    @Column(nullable = false)
-    private AppointmentEntity appointments;
+    
+    @OneToMany(mappedBy = "doctorEntity", fetch = FetchType.LAZY)
+    private List<AppointmentEntity> appointments;
 
+    public DoctorEntity() {
+    }
+
+    public DoctorEntity(String firstName, String lastName, String registration, String qualifications) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.registration = registration;
+        this.qualifications = qualifications;
+    }
+
+    
     public Long getDoctorId() {
         return doctorId;
     }
@@ -115,6 +128,20 @@ public class DoctorEntity implements Serializable {
      */
     public void setQualifications(String qualifications) {
         this.qualifications = qualifications;
+    }
+
+    /**
+     * @return the appointments
+     */
+    public List<AppointmentEntity> getAppointments() {
+        return appointments;
+    }
+
+    /**
+     * @param appointments the appointments to set
+     */
+    public void setAppointments(List<AppointmentEntity> appointments) {
+        this.appointments = appointments;
     }
     
 }

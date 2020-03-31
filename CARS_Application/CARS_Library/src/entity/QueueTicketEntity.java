@@ -22,6 +22,13 @@ public class QueueTicketEntity implements Serializable {
     private Date currentDate;
     private static int queueNo;
 
+    public QueueTicketEntity() {
+    }
+
+    public QueueTicketEntity(Date currentDate) {
+        this.currentDate = currentDate;
+    }
+
 
     @Override
     public boolean equals(Object object) {

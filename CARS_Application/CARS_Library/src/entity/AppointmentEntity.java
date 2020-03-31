@@ -2,14 +2,15 @@
 package entity;
 
 import java.io.Serializable;
-import java.sql.Date;
+import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -24,16 +25,26 @@ public class AppointmentEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long appointmentId;
-    @ManyToOne
-    @Column(nullable = false)
-    private DoctorEntity doctor;
-    @ManyToOne
-    @Column(nullable = false)
-    private PatientEntity patient;
     @Temporal (TemporalType.DATE)
     @Column(nullable = false)
-    private Date date;
+    private Date apptDate;
+    
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private DoctorEntity doctor;
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private PatientEntity patient;
+    
 
+    public AppointmentEntity() {
+    }
+
+    public AppointmentEntity(Date date) {
+        this.apptDate = date;
+    }
+
+    
     public Long getAppointmentId() {
         return appointmentId;
     }
@@ -65,6 +76,48 @@ public class AppointmentEntity implements Serializable {
     @Override
     public String toString() {
         return "entity.AppointmentEntity[ id=" + appointmentId + " ]";
+    }
+
+    /**
+     * @return the doctor
+     */
+    public DoctorEntity getDoctor() {
+        return doctor;
+    }
+
+    /**
+     * @param doctor the doctor to set
+     */
+    public void setDoctor(DoctorEntity doctor) {
+        this.doctor = doctor;
+    }
+
+    /**
+     * @return the patient
+     */
+    public PatientEntity getPatient() {
+        return patient;
+    }
+
+    /**
+     * @param patient the patient to set
+     */
+    public void setPatient(PatientEntity patient) {
+        this.patient = patient;
+    }
+
+    /**
+     * @return the apptDate
+     */
+    public Date getApptDate() {
+        return apptDate;
+    }
+
+    /**
+     * @param apptDate the apptDate to set
+     */
+    public void setApptDate(Date apptDate) {
+        this.apptDate = apptDate;
     }
     
 }

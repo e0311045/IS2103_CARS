@@ -2,11 +2,15 @@
 package ejb.session.stateless;
 
 import entity.StaffEntity;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 @Stateless
+@Local(StaffSessionBeanLocal.class)
+@Remote(StaffSessionBeanRemote.class)
 public class StaffSessionBean implements StaffSessionBeanRemote, StaffSessionBeanLocal 
 {
     @PersistenceContext(unitName = "CARS_Application-ejbPU")
