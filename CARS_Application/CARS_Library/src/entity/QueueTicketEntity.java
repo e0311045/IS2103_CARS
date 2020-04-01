@@ -2,7 +2,7 @@
 package entity;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.sql.Date;
 import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -20,7 +20,7 @@ public class QueueTicketEntity implements Serializable {
     @Id
     @Temporal(TemporalType.DATE)
     private Date currentDate;
-    private static int queueNo;
+    private int queueNo;
 
     public QueueTicketEntity() {
     }
@@ -72,15 +72,15 @@ public class QueueTicketEntity implements Serializable {
     /**
      * @return the queueNo
      */
-    public static int getQueueNo() {
+    public int getQueueNo() {
         return queueNo;
     }
 
     /**
      * @param aQueueNo the queueNo to set
      */
-    public static void incrementQueueNo(int aQueueNo) {
-        queueNo += 1;
+    public void setQueueNo(int aQueueNo) {
+        queueNo = aQueueNo;
     }
     
 }

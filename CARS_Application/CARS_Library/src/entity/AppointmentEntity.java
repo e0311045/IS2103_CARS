@@ -2,7 +2,8 @@
 package entity;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.sql.Date;
+import java.sql.Time;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -28,17 +29,29 @@ public class AppointmentEntity implements Serializable {
     @Temporal (TemporalType.DATE)
     @Column(nullable = false)
     private Date apptDate;
+    @Temporal (TemporalType.TIME)
+    @Column(nullable = false)
+    private Time apptTime;
     
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "doctorId")
     private DoctorEntity doctor;
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "patientId")
     private PatientEntity patient;
     
 
     public AppointmentEntity() {
     }
+
+    public AppointmentEntity(Date apptDate, Time apptTime, DoctorEntity doctor, PatientEntity patient) {
+        this.apptDate = apptDate;
+        this.apptTime = apptTime;
+        this.doctor = doctor;
+        this.patient = patient;
+    }
+    
+    
 
     public AppointmentEntity(Date date) {
         this.apptDate = date;
@@ -118,6 +131,20 @@ public class AppointmentEntity implements Serializable {
      */
     public void setApptDate(Date apptDate) {
         this.apptDate = apptDate;
+    }
+
+    /**
+     * @return the apptTime
+     */
+    public Time getApptTime() {
+        return apptTime;
+    }
+
+    /**
+     * @param apptTime the apptTime to set
+     */
+    public void setApptTime(Time apptTime) {
+        this.apptTime = apptTime;
     }
     
 }

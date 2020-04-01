@@ -29,6 +29,8 @@ public class DoctorEntity implements Serializable {
     
     @OneToMany(mappedBy = "doctorEntity", fetch = FetchType.LAZY)
     private List<AppointmentEntity> appointments;
+    @OneToMany(mappedBy = "doctorEntity", fetch = FetchType.LAZY)
+    private List<LeaveEntity> leaves;
 
     public DoctorEntity() {
     }

@@ -9,14 +9,14 @@ package util.exception;
  *
  * @author leege
  */
-public class MaximumLeaveAppliedForTheWeekException extends Exception {
+public class MaximumLeaveAppliedException extends Exception {
 
     /**
      * Creates a new instance of
      * <code>MaximumLeaveAppliedForTheWeekException</code> without detail
      * message.
      */
-    public MaximumLeaveAppliedForTheWeekException() {
+    public MaximumLeaveAppliedException() {
     }
 
     /**
@@ -26,7 +26,7 @@ public class MaximumLeaveAppliedForTheWeekException extends Exception {
      *
      * @param msg the detail message.
      */
-    public MaximumLeaveAppliedForTheWeekException(String msg) {
+    public MaximumLeaveAppliedException(String msg) {
         super(msg);
     }
 }
