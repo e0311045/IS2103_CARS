@@ -26,13 +26,15 @@ public class ConsultationEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long consultationId;
+    
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
-    private PatientEntity patientC;
-    // private String identityNumber;
+    private PatientEntity consultingPatient;
+    
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
-    private DoctorEntity doctorC;
+    private DoctorEntity consultingDoctor;
+    
     @Temporal(TemporalType.TIME)
     private Date time; //HH:MM
 
@@ -42,7 +44,6 @@ public class ConsultationEntity implements Serializable {
 
     public ConsultationEntity(Long consultationId, Date time) {
         this();
-
         this.consultationId = consultationId;
         this.time = time;
     }
@@ -56,19 +57,19 @@ public class ConsultationEntity implements Serializable {
     }
 
     public PatientEntity getPatient() {
-        return patientC;
+        return consultingPatient;
     }
 
     public void setPatient(PatientEntity patient) {
-        this.patientC = patient;
+        this.consultingPatient = patient;
     }
 
     public DoctorEntity getDoctor() {
-        return doctorC;
+        return consultingDoctor;
     }
 
     public void setDoctor(DoctorEntity doctor) {
-        this.doctorC = doctor;
+        this.consultingDoctor = doctor;
     }
 
     public Date getTime() {

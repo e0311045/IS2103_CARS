@@ -128,8 +128,20 @@ public class MainApp {
                 break;
             } else {
                 newPatient.setIdentityNumber(identityNumber);
-                System.out.print("Enter Security Code> ");
-                newPatient.setSecurityCode(scanner.nextLine().trim());
+                while(true){
+                    System.out.print("Enter Password> ");
+                    String password = scanner.nextLine().trim();
+                    if(password.length()<6){
+                        System.out.println("Password must be at least 8 characters");
+                    }
+                    else if(password.length()>32){
+                        System.out.println("Password must be lesser than 33 characters");
+                    }
+                    else{
+                        newPatient.setSecurityCode(password);
+                        break;
+                    }
+                }
                 System.out.print("Enter First Name> ");
                 newPatient.setFirstName(scanner.nextLine().trim());
                 System.out.print("Enter Last Name> ");

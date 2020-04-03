@@ -308,7 +308,7 @@ public class RegistrationModule {
         if (appointmentEntities != null) {
             for (AppointmentEntity appointmentEntity : appointmentEntities) {
                 if (appointmentEntity.getPatient().getIdentityNumber().equals(identityNumber)) {
-                    System.out.printf("%s%s%s%s\n", appointmentEntity.getAppointmentId().toString(), "| " + datef.format(appointmentEntity.getDate()), "| " + df.format(appointmentEntity.getTime()), "| " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName());
+                    System.out.printf("%s%s%s%s\n", appointmentEntity.getAppointmentId().toString(), "| " + datef.format(appointmentEntity.getAppointmentDate()), "| " + df.format(appointmentEntity.getAppointmentTime()), "| " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName());
                 }
             }
         } else {
@@ -330,7 +330,7 @@ public class RegistrationModule {
                 }
 
                 // get time check against doctor availability in consultation
-                Date currTime = currentAppointment.getTime();
+                Date currTime = currentAppointment.getAppointmentTime();
 
                 List<ConsultationEntity> consultations = consultationEntityControllerRemote.retrieveAllConsultations();
                 if (consultations != null) {

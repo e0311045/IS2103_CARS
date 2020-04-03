@@ -20,6 +20,7 @@ import entity.PatientEntity;
 import entity.DoctorEntity;
 import java.text.DateFormat;
 import java.text.ParseException;
+import util.date.DateHelper;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -36,6 +37,8 @@ public class RegistrationModule {
     private RegistrationControllerRemote registrationControllerRemote;
     private ConsultationEntityControllerRemote consultationEntityControllerRemote;
     private AppointmentEntityControllerRemote appointmentEntityControllerRemote;
+    
+    //Entities Variable
     private StaffEntity currentStaffEntity;
     private PatientEntity currentPatientEntity;
     private DoctorEntity currentDoctorEntity;
@@ -58,20 +61,20 @@ public class RegistrationModule {
     }
 
     public void walkIn() throws ParseException {
-        consultWalkIn();
+        consultByWalkIn();
     }
 
     public void consultApp() {
-        consultAppointment();
+        consultByAppointment();
     }
 
-    private void consultWalkIn() throws ParseException {
+    private void consultByWalkIn() throws ParseException {
 
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("*** Self-Service Kiosk :: Register Walk-In Consultation ***\n");
         System.out.println("Doctor:");
-        // list all doctor in database (id, firstname lastname)
+        // list all doctor in database id, firstname lastname
         List<DoctorEntity> doctorEntities = doctorEntityControllerRemote.retrieveAllDoctors();
         System.out.printf("%s%s\n", "Id", "| Name");
 
@@ -118,14 +121,14 @@ public class RegistrationModule {
                 t += 30 * ONE_MINUTE_IN_MILLIS;
             }
 
-            // create all empty sets first to avoid null exception in accessing array
+            // Initialise all empty sets first to avoid null exception in accessing array
             for (int i = 1; i < 7; i++) {
                 for (int j = 1; j < doctorEntities.size() + 1; j++) {
                     availability[i][j] = "O"; // all empty
                 }
             }
 
-            // if consultation slot taken insert X
+            // if consultation slot taken mark X
             for (int i = 1; i < 7; i++) {
                 for (int j = 1; j < doctorEntities.size() + 1; j++) {
                     // if find(doctor, time) , print X // ConsultationNotFound
@@ -133,8 +136,7 @@ public class RegistrationModule {
                     if (consultations != null) {
                         for (ConsultationEntity consultation : consultations) {
                             Date temp = consultation.getTime();
-                            DateFormat df = new SimpleDateFormat("HH:mm");
-                            String tempTime = df.format(temp);
+                            String tempTime = DateHelper.timeSDF.format(temp);
                             if ((consultation.getDoctor().getDoctorId().toString().equals(Integer.toString(j))) && tempTime.equals(availability[i][0])) {
                                 availability[i][j] = "X";
                             }
@@ -143,7 +145,7 @@ public class RegistrationModule {
                 }
             }
 
-            // print availability table
+            // print all availability table
             for (int i = 0; i < 7; i++) {
                 for (int j = 0; j < doctorEntities.size() + 1; j++) {
                     if (availability[i][j].equals("09:00")) {// opening
@@ -163,7 +165,7 @@ public class RegistrationModule {
             System.out.print("Enter Doctor Id> ");
             Long doctorId = scanner.nextLong();
 
-            // search doctor
+            // Look for doctor
             try {
                 currentDoctorEntity = doctorEntityControllerRemote.retrieveDoctorById(doctorId);
             } catch (DoctorNotFoundException ex) {
@@ -175,16 +177,15 @@ public class RegistrationModule {
 
             // if Time avaiable is "O" -> add consultation at this timing
             Date currTime = new Date();
-            DateFormat df = new SimpleDateFormat("HH:mm");
 
             for (int i = 1; i < 7; i++) {
                 if (availability[i][docId].equals("O")) {// available
-                    currTime = df.parse(availability[i][0]);
+                    currTime = DateHelper.timeSDF.parse(availability[i][0]);
                     i = 6;
                 }
             }
 
-            System.out.println(currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " is going to see " + currentDoctorEntity.getFirstName() + " " + currentDoctorEntity.getLastName() + " at " + df.format(currTime) + ". Queue Number is: " + registrationControllerRemote.getQueue() + "\n");
+            System.out.println(currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " is going to see " + currentDoctorEntity.getFirstName() + " " + currentDoctorEntity.getLastName() + " at " + DateHelper.timeSDF.format(currTime) + ". Queue Number is: " + registrationControllerRemote.getQueue() + "\n");
             registrationControllerRemote.addQueue();
 
             // create consultation
@@ -200,7 +201,7 @@ public class RegistrationModule {
         }
     }
 
-    private void consultAppointment() {
+    private void consultByAppointment() {
 
         Scanner scanner = new Scanner(System.in);
 
@@ -211,13 +212,10 @@ public class RegistrationModule {
         List<AppointmentEntity> appointmentEntities = appointmentEntityControllerRemote.retrieveAllAppointments();
         System.out.printf("%s%s%s%s\n", "Id|", "Date      |", "Time  |", "Doctor");
 
-        DateFormat df = new SimpleDateFormat("HH:mm");
-        DateFormat datef = new SimpleDateFormat("yyyy-MM-dd");
-
         if (appointmentEntities != null) {
             for (AppointmentEntity appointmentEntity : appointmentEntities) {
                 if (appointmentEntity.getPatient().getIdentityNumber().equals(currentPatientEntity.getIdentityNumber())) {
-                    System.out.printf("%s%s%s%s\n", appointmentEntity.getAppointmentId().toString(), "| " + datef.format(appointmentEntity.getDate()), "| " + df.format(appointmentEntity.getTime()), "| " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName());
+                    System.out.printf("%s%s%s%s\n", appointmentEntity.getAppointmentId().toString(), "| " + DateHelper.dateSDF.format(appointmentEntity.getAppointmentDate()), "| " + DateHelper.timeSDF.format(appointmentEntity.getAppointmentTime()), "| " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName());
                 }
             }
             System.out.println();
@@ -238,18 +236,18 @@ public class RegistrationModule {
                 }
 
                 // get time check against doctor availability in consultation
-                Date currTime = currentAppointment.getTime();
+                Date currTime = currentAppointment.getAppointmentTime();
 
                 List<ConsultationEntity> consultations = consultationEntityControllerRemote.retrieveAllConsultations();
                 if (consultations != null) {
                     for (ConsultationEntity consultation : consultations) {
                         Date temp = consultation.getTime();
-                        String tempTime = df.format(temp);
+                        String tempTime = DateHelper.timeSDF.format(temp);
                         //consultation slot not available
-                        if ((consultation.getDoctor().getDoctorId().toString().equals(currentAppointment.getDoctor().getDoctorId().toString())) && tempTime.equals(df.format(currTime))) {
+                        if ((consultation.getDoctor().getDoctorId().toString().equals(currentAppointment.getDoctor().getDoctorId().toString())) && tempTime.equals(DateHelper.timeSDF.format(currTime))) {
                             System.out.println("Consultation slot is already taken.");
                         } else { // consultation available for appointment
-                            System.out.println(currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " is going to see " + currentAppointment.getDoctor().getFirstName() + " " + currentAppointment.getDoctor().getLastName() + " at " + df.format(currTime) + ". Queue Number is: " + registrationControllerRemote.getQueue() + "\n");
+                            System.out.println(currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " is going to see " + currentAppointment.getDoctor().getFirstName() + " " + currentAppointment.getDoctor().getLastName() + " at " + DateHelper.timeSDF.format(currTime) + ". Queue Number is: " + registrationControllerRemote.getQueue() + "\n");
                             registrationControllerRemote.addQueue();
 
                             // create consultation

@@ -59,6 +59,7 @@ public class ConsultationEntityController implements ConsultationEntityControlle
                 Logger.getLogger(ConsultationEntityController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        entityManager.flush();
     }
 
     @Override

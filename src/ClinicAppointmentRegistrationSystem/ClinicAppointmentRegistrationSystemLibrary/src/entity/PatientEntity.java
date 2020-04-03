@@ -29,29 +29,29 @@ public class PatientEntity implements Serializable {
     @Id
     @Column(length = 9, unique = true, nullable = false)
     private String identityNumber;
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true)
     private Long patientId;
     @Column(length = 32, nullable = false)
     private String firstName;
     @Column(length = 32, nullable = false)
     private String lastName;
-    @Column(length = 32, nullable = false)
+    @Column(length = 1, nullable = false)
     private String gender;
     @Column(length = 32, nullable = false)
     private String securityCode;
-    @Column(nullable = false)
+    @Column(length = 3, nullable = false)
     private Integer age;
     @Column(length = 8, nullable = false)
     private String phone;
     @Column(length = 32, nullable = false)
     private String address;
 
-    @OneToMany(mappedBy = "patientC")
+    @OneToMany(mappedBy = "consultingPatient")
     @JoinColumn(nullable = false)
     private List<ConsultationEntity> consultationEntities;
 
-    @OneToMany(mappedBy = "patientA")
+    @OneToMany(mappedBy = "appointmentPatient")
     @JoinColumn(nullable = false)
     private List<AppointmentEntity> appointmentEntities;
 
@@ -199,19 +199,7 @@ public class PatientEntity implements Serializable {
             throw new PatientAddConsultationException("Consultation already added to Patient");
         }
     }
-
-    /*
-    public void removeConsultation(ConsultationEntity consultation) throws PatientRemoveConsultationException
-    {
-        if(consultation != null && this.consultationEntities.contains(consultation))
-        {
-            this.getConsultationEntities().remove(consultation);
-        }
-        else
-        {
-            throw new PatientRemoveConsultationException("Consultation has not been added to Patient");
-        }
-    }*/
+    
     public List<AppointmentEntity> getAppointmentEntities() {
         return appointmentEntities;
     }

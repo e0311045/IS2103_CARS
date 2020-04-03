@@ -24,19 +24,21 @@ public class AppointmentEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long appointmentId;
-    @ManyToOne(optional = false)
-    @JoinColumn(nullable = false)
-    private PatientEntity patientA;
-    // private String identityNumber;
-    @ManyToOne(optional = false)
-    @JoinColumn(nullable = false)
-    private DoctorEntity doctorA;
     @Temporal(TemporalType.DATE)
-    private Date date; //YYYY-MM-DD
+    private Date appointmentDate; //Format Kept YYYY-MM-DD
     @Temporal(TemporalType.TIME)
-    private Date time; //HH:MM
+    private Date appointmentTime; //Format Kept HH:MM
+    
+    @ManyToOne(optional = false)
+    @JoinColumn(nullable = false)
+    private PatientEntity appointmentPatient;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(nullable = false)
+    private DoctorEntity appointmentDoctor;
+
 
     public AppointmentEntity() {
 
@@ -46,8 +48,8 @@ public class AppointmentEntity implements Serializable {
         this();
 
         this.appointmentId = appointmentId;
-        this.date = date;
-        this.time = time;
+        this.appointmentDate = date;
+        this.appointmentTime = time;
     }
 
     public Long getAppointmentId() {
@@ -59,34 +61,34 @@ public class AppointmentEntity implements Serializable {
     }
 
     public PatientEntity getPatient() {
-        return patientA;
+        return appointmentPatient;
     }
 
     public void setPatient(PatientEntity patient) {
-        this.patientA = patient;
+        this.appointmentPatient = patient;
     }
 
     public DoctorEntity getDoctor() {
-        return doctorA;
+        return appointmentDoctor;
     }
 
     public void setDoctor(DoctorEntity doctor) {
-        this.doctorA = doctor;
+        this.appointmentDoctor = doctor;
     }
 
-    public Date getTime() {
-        return time;
+    public Date getAppointmentTime() {
+        return appointmentTime;
     }
 
-    public void setTime(Date time) {
-        this.time = time;
+    public void setAppointmentTime(Date appointmentTime) {
+        this.appointmentTime = appointmentTime;
     }
 
-    public Date getDate() {
-        return date;
+    public Date getAppointmentDate() {
+        return appointmentDate;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setAppointmentDate(Date appointmentDate) {
+        this.appointmentDate = appointmentDate;
     }
 }

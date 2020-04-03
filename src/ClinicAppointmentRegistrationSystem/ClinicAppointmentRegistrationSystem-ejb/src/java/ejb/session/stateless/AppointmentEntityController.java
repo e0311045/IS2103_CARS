@@ -58,7 +58,8 @@ public class AppointmentEntityController implements AppointmentEntityControllerL
             } catch (DoctorAddAppointmentException ex) {
                 Logger.getLogger(AppointmentEntityController.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
+        }        
+        entityManager.flush();
     }
 
     @Override

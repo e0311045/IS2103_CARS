@@ -27,7 +27,7 @@ public class DoctorEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long doctorId;
     @Column(length = 32, nullable = false)
     private String firstName;
@@ -38,12 +38,12 @@ public class DoctorEntity implements Serializable {
     @Column(length = 32, nullable = false)
     private String qualifications;
 
-    @OneToMany(mappedBy = "doctorC")
+    @OneToMany(mappedBy = "consultingDoctor")
     @JoinColumn(nullable = false)
     private List<ConsultationEntity> consultationEntities;
 
     @JoinColumn(nullable = false)
-    @OneToMany(mappedBy = "doctorA")
+    @OneToMany(mappedBy = "appointmentDoctor")
     private List<AppointmentEntity> appointmentEntities;
 
     public DoctorEntity() {

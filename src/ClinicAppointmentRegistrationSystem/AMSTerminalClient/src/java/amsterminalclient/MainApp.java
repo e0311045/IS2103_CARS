@@ -18,6 +18,7 @@ import entity.StaffEntity;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import util.date.DateHelper;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -212,13 +213,11 @@ public class MainApp {
         List<AppointmentEntity> appointmentEntities = appointmentEntityControllerRemote.retrieveAllAppointments();
         System.out.printf("%s%s%s%s\n", "Id|", "Date      |", "Time  |", "Doctor");
 
-        DateFormat df = new SimpleDateFormat("HH:mm");
-        DateFormat datef = new SimpleDateFormat("yyyy-MM-dd");
 
         if (appointmentEntities != null) {
             for (AppointmentEntity appointmentEntity : appointmentEntities) {
                 if (appointmentEntity.getPatient().getIdentityNumber().equals(identityNumber)) {
-                    System.out.printf("%s%s%s%s\n", appointmentEntity.getAppointmentId().toString(), "| " + datef.format(appointmentEntity.getDate()), "| " + df.format(appointmentEntity.getTime()), "| " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName());
+                    System.out.printf("%s%s%s%s\n", appointmentEntity.getAppointmentId().toString(), "| " + DateHelper.dateSDF.format(appointmentEntity.getAppointmentDate()), "| " + DateHelper.timeSDF.format(appointmentEntity.getAppointmentTime()), "| " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName());
                 }
             }
         } else {
@@ -259,12 +258,11 @@ public class MainApp {
             System.out.print("Enter Date> ");
             inputDate = scanner.nextLine().trim();
 
-            DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Date date = sdf.parse(inputDate);
-            currentDate = sdf.parse(sdf.format(new Date()));
+            Date date = DateHelper.dateSDF.parse(inputDate);
+            currentDate = DateHelper.dateSDF.parse(DateHelper.dateSDF.format(new Date()));
 
             if (date.after(currentDate)) {
-                newAppointmentEntity.setDate(date);
+                newAppointmentEntity.setAppointmentDate(date);
 
                 Calendar cal = Calendar.getInstance();
                 Calendar today = Calendar.getInstance();
@@ -296,9 +294,9 @@ public class MainApp {
                     for (int i = 0; i < 16; i++) { // i == 16 so it will only stop at 4.30pm
                         for (AppointmentEntity appointment : appointments) { // date check
                             // if date compare == 0, time not equal, print time
-                            Date temp = appointment.getTime();
+                            Date temp = appointment.getAppointmentTime();
                             String stringTime = df.format(temp);
-                            if (date.compareTo(appointment.getDate()) == 0 && stringTime.equals(availability[i]) && (Objects.equals(appointment.getDoctor().getDoctorId(), doctorId))) {
+                            if (date.compareTo(appointment.getAppointmentDate()) == 0 && stringTime.equals(availability[i]) && (Objects.equals(appointment.getDoctor().getDoctorId(), doctorId))) {
                                 availability[i] = "";
                             }
                         }
@@ -319,7 +317,7 @@ public class MainApp {
                 try {
                     DateFormat formatter = new SimpleDateFormat("HH:mm");
                     Date time = formatter.parse(inputTime);
-                    newAppointmentEntity.setTime(time);
+                    newAppointmentEntity.setAppointmentTime(time);
 
                 } catch (ParseException ex) {
                     System.out.println("An error has occurred while retrieving date: " + ex.getMessage() + "\n");
@@ -357,7 +355,7 @@ public class MainApp {
         if (appointmentEntities != null) {
             for (AppointmentEntity appointmentEntity : appointmentEntities) {
                 if (appointmentEntity.getPatient().getIdentityNumber().equals(currentPatientEntity.getIdentityNumber())) {
-                    System.out.printf("%s%s%s%s\n", appointmentEntity.getAppointmentId().toString(), "| " + datef.format(appointmentEntity.getDate()), "| " + df.format(appointmentEntity.getTime()), "| " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName());
+                    System.out.printf("%s%s%s%s\n", appointmentEntity.getAppointmentId().toString(), "| " + datef.format(appointmentEntity.getAppointmentDate()), "| " + df.format(appointmentEntity.getAppointmentTime()), "| " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName());
                 }
             }
 
@@ -368,7 +366,7 @@ public class MainApp {
             try {
                 AppointmentEntity appointmentEntity = appointmentEntityControllerRemote.retrieveAppointmentByAppointmentId(appId);
                 appointmentEntityControllerRemote.cancelAppointment(appId);
-                System.out.println("Appointment: " + currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " and " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName() + " at " + df.format(appointmentEntity.getTime()) + " on " + datef.format(appointmentEntity.getDate()) + " has been cancelled.");
+                System.out.println("Appointment: " + currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " and " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName() + " at " + df.format(appointmentEntity.getAppointmentTime()) + " on " + datef.format(appointmentEntity.getAppointmentDate()) + " has been cancelled.");
             } catch (AppointmentNotFoundException ex) {
                 System.out.println("No appointment found.\n");
             }
