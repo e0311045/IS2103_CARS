@@ -18,16 +18,13 @@ import entity.ConsultationEntity;
 import entity.StaffEntity;
 import entity.PatientEntity;
 import entity.DoctorEntity;
-import java.text.DateFormat;
 import java.text.ParseException;
 import util.date.DateHelper;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import util.exception.DoctorNotFoundException;
-import util.exception.PatientNotFoundException;
 
 public class RegistrationModule {
 
@@ -85,12 +82,14 @@ public class RegistrationModule {
         System.out.println();
         System.out.println("Availability:");
         // list all slots available to book (3 hour mark from current time)
-        // opening hours 0900 to 1700
+        // current Day closing hours
+
+        String dayOfWeek = DateHelper.getDayOfWeek(DateHelper.getCurrentDate());
 
         // check current time
         Calendar cal = Calendar.getInstance();
         Calendar operating = Calendar.getInstance();
-        if ((operating.get(Calendar.HOUR_OF_DAY) == 9 && operating.get(Calendar.MINUTE) >= 00) || (operating.get(Calendar.HOUR_OF_DAY) == 16 && operating.get(Calendar.MINUTE) < 30)) {
+        if ((operating.get(Calendar.HOUR_OF_DAY) == 8 && operating.get(Calendar.MINUTE) >= 30) || (operating.get(Calendar.HOUR_OF_DAY) == DateHelper.getClosingHour(dayOfWeek) && operating.get(Calendar.MINUTE) < 30)) {
 
             String availability[][] = new String[7][doctorEntities.size() + 1];
             availability[0][0] = "Time ";
@@ -116,8 +115,7 @@ public class RegistrationModule {
             // time in table column 0
             for (int i = 1; i < 7; i++) {
                 Date time = new Date(t);
-                DateFormat df = new SimpleDateFormat("HH:mm"); // dd-MM-yy date
-                availability[i][0] = df.format(time);
+                availability[i][0] = DateHelper.timeSDF.format(time);
                 t += 30 * ONE_MINUTE_IN_MILLIS;
             }
 
@@ -185,7 +183,7 @@ public class RegistrationModule {
                 }
             }
 
-            System.out.println(currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " is going to see " + currentDoctorEntity.getFirstName() + " " + currentDoctorEntity.getLastName() + " at " + DateHelper.timeSDF.format(currTime) + ". Queue Number is: " + registrationControllerRemote.getQueue() + "\n");
+            System.out.println(currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " appointment with Dr. " + currentDoctorEntity.getFirstName() + " " + currentDoctorEntity.getLastName() + " has been booked at " + DateHelper.timeSDF.format(currTime) + ".\n Queue Number is: " + registrationControllerRemote.getQueue() + "\n");
             registrationControllerRemote.addQueue();
 
             // create consultation
@@ -247,7 +245,10 @@ public class RegistrationModule {
                         if ((consultation.getDoctor().getDoctorId().toString().equals(currentAppointment.getDoctor().getDoctorId().toString())) && tempTime.equals(DateHelper.timeSDF.format(currTime))) {
                             System.out.println("Consultation slot is already taken.");
                         } else { // consultation available for appointment
-                            System.out.println(currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " is going to see " + currentAppointment.getDoctor().getFirstName() + " " + currentAppointment.getDoctor().getLastName() + " at " + DateHelper.timeSDF.format(currTime) + ". Queue Number is: " + registrationControllerRemote.getQueue() + "\n");
+                            System.out.println(currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() 
+                                                + " appointment is confirmed with Dr. " + currentAppointment.getDoctor().getFirstName() + " " 
+                                                + currentAppointment.getDoctor().getLastName() + " at " + DateHelper.timeSDF.format(currTime) 
+                                                + ".\n Queue Number is: " + registrationControllerRemote.getQueue() + "\n");
                             registrationControllerRemote.addQueue();
 
                             // create consultation

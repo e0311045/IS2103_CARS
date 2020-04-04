@@ -131,13 +131,13 @@ public class MainApp {
             } else {
                 newPatient.setIdentityNumber(identityNumber);
                 System.out.print("Enter Security Code> ");
-                newPatient.setSecurityCode(scanner.nextLine().trim());
+                newPatient.setPassword(scanner.nextLine().trim());
                 System.out.print("Enter First Name> ");
                 newPatient.setFirstName(scanner.nextLine().trim());
                 System.out.print("Enter Last Name> ");
                 newPatient.setLastName(scanner.nextLine().trim());
                 System.out.print("Enter Gender> ");
-                newPatient.setGender(scanner.nextLine().trim());
+                newPatient.setGender(scanner.nextLine().trim().charAt(0));
                 System.out.print("Enter Age> ");
                 newPatient.setAge(scanner.nextInt());
                 scanner.nextLine();

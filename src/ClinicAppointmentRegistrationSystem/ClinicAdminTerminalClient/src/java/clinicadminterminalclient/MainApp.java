@@ -11,6 +11,7 @@ import ejb.session.stateful.RegistrationControllerRemote;
 import ejb.session.stateless.AppointmentEntityControllerRemote;
 import ejb.session.stateless.ConsultationEntityControllerRemote;
 import ejb.session.stateless.DoctorEntityControllerRemote;
+import ejb.session.stateless.LeaveEntityControllerRemote;
 import ejb.session.stateless.PatientEntityControllerRemote;
 import ejb.session.stateless.StaffEntityControllerRemote;
 import entity.StaffEntity;
@@ -27,6 +28,7 @@ public class MainApp {
     private RegistrationControllerRemote registrationControllerRemote;
     private ConsultationEntityControllerRemote consultationEntityControllerRemote;
     private AppointmentEntityControllerRemote appointmentEntityControllerRemote;
+    private LeaveEntityControllerRemote leaveEntityControllerRemote;
 
     private StaffEntity currentStaffEntity;
     private RegistrationModule registrationModule;
@@ -37,13 +39,18 @@ public class MainApp {
     public MainApp() {
     }
 
-    MainApp(StaffEntityControllerRemote staffEntityControllerRemote, DoctorEntityControllerRemote doctorEntityControllerRemote, PatientEntityControllerRemote patientEntityControllerRemote, RegistrationControllerRemote registrationControllerRemote, ConsultationEntityControllerRemote consultationEntityControllerRemote, AppointmentEntityControllerRemote appointmentEntityControllerRemote) {
+    MainApp(StaffEntityControllerRemote staffEntityControllerRemote, DoctorEntityControllerRemote doctorEntityControllerRemote,
+            PatientEntityControllerRemote patientEntityControllerRemote, RegistrationControllerRemote registrationControllerRemote, 
+            ConsultationEntityControllerRemote consultationEntityControllerRemote, AppointmentEntityControllerRemote appointmentEntityControllerRemote,
+            LeaveEntityControllerRemote leaveEntityControllerRemote) 
+    {
         this.staffEntityControllerRemote = staffEntityControllerRemote;
         this.doctorEntityControllerRemote = doctorEntityControllerRemote;
         this.patientEntityControllerRemote = patientEntityControllerRemote;
         this.registrationControllerRemote = registrationControllerRemote;
         this.consultationEntityControllerRemote = consultationEntityControllerRemote;
         this.appointmentEntityControllerRemote = appointmentEntityControllerRemote;
+        this.leaveEntityControllerRemote = leaveEntityControllerRemote;
     }
 
     public void runApp() throws ParseException, AppointmentNotFoundException {
@@ -68,7 +75,7 @@ public class MainApp {
                         doLogin();
                         registrationModule = new RegistrationModule(staffEntityControllerRemote, doctorEntityControllerRemote, patientEntityControllerRemote, registrationControllerRemote, consultationEntityControllerRemote, appointmentEntityControllerRemote);
                         appointmentModule = new AppointmentModule(staffEntityControllerRemote, doctorEntityControllerRemote, patientEntityControllerRemote, registrationControllerRemote, appointmentEntityControllerRemote);
-                        administrationModule = new AdministrationModule(staffEntityControllerRemote, doctorEntityControllerRemote, patientEntityControllerRemote, registrationControllerRemote);
+                        administrationModule = new AdministrationModule(staffEntityControllerRemote, doctorEntityControllerRemote, patientEntityControllerRemote, registrationControllerRemote,leaveEntityControllerRemote);
                         menuMain();
                     } catch (InvalidLoginException ex) {
                     }

@@ -27,25 +27,25 @@ import util.exception.PatientNotFoundException;
 public class PatientEntityController implements PatientEntityControllerLocal, PatientEntityControllerRemote {
 
     @PersistenceContext(unitName = "ClinicAppointmentRegistrationSystem-ejbPU")
-    private EntityManager entityManager;
+    private EntityManager em;
 
     public PatientEntityController() {
     }
 
     @Override
     public PatientEntity createNewPatient(PatientEntity newPatientEntity) {
-        entityManager.persist(newPatientEntity);
-        entityManager.flush();
+        em.persist(newPatientEntity);
+        em.flush();
 
         return newPatientEntity;
     }
 
     @Override
-    public PatientEntity patientLogin(String identityNumber, String securityCode) throws InvalidLoginException {
+    public PatientEntity patientLogin(String identityNumber, String password) throws InvalidLoginException {
         try {
             PatientEntity patientEntity = retrievePatientByIdentityNumber(identityNumber);
 
-            if (patientEntity.getSecurityCode().equals(securityCode)) {
+            if (patientEntity.getPassword().equals(password)) {
                 return patientEntity;
             } else {
                 throw new InvalidLoginException("Identity number does not exist or invalid security code!");
@@ -57,14 +57,14 @@ public class PatientEntityController implements PatientEntityControllerLocal, Pa
 
     @Override
     public List<PatientEntity> retrieveAllPatients() {
-        Query query = entityManager.createQuery("SELECT p FROM PatientEntity p");
+        Query query = em.createQuery("SELECT p FROM PatientEntity p");
 
         return query.getResultList();
     }
 
     @Override
     public PatientEntity retrievePatientByIdentityNumber(String identityNumber) throws PatientNotFoundException {
-        Query query = entityManager.createQuery("SELECT p FROM PatientEntity p WHERE p.identityNumber = :inIdentitynumber");
+        Query query = em.createQuery("SELECT p FROM PatientEntity p WHERE p.identityNumber = :inIdentitynumber");
         query.setParameter("inIdentitynumber", identityNumber);
 
         try {
@@ -76,12 +76,14 @@ public class PatientEntityController implements PatientEntityControllerLocal, Pa
 
     @Override
     public void updatePatient(PatientEntity patientEntity) {
-        entityManager.merge(patientEntity);
+        em.merge(patientEntity);
     }
 
     @Override
     public void deletePatient(String identityNumber) throws PatientNotFoundException {
         PatientEntity patientEntityToRemove = retrievePatientByIdentityNumber(identityNumber);
-        entityManager.remove(patientEntityToRemove);
+        em.remove(patientEntityToRemove);
     }
+    
+
 }

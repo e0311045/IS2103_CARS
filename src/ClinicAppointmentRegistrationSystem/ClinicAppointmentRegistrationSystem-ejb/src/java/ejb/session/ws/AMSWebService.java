@@ -41,10 +41,10 @@ public class AMSWebService {
 
     @WebMethod(operationName = "registerPatient")
     public String registerPatient(@WebParam(name = "identityNumber") String identityNumber, 
-            @WebParam(name = "securityCode") String securityCode,
+            @WebParam(name = "password") String password,
             @WebParam(name = "firstName") String firstName,
             @WebParam(name = "lastName") String lastName,
-            @WebParam(name = "gender") String gender,
+            @WebParam(name = "gender") char gender,
             @WebParam(name = "age") Integer age,
             @WebParam(name = "phone") String phone,
             @WebParam(name = "address") String address
@@ -62,7 +62,7 @@ public class AMSWebService {
         System.out.println("Enter Phone> ");
         System.out.println("Enter Address> ");
         newPatient.setIdentityNumber(identityNumber);
-        newPatient.setSecurityCode(securityCode);
+        newPatient.setPassword(password);
         newPatient.setFirstName(firstName);
         newPatient.setLastName(lastName);
         newPatient.setGender(gender);
@@ -80,7 +80,7 @@ public class AMSWebService {
     }
 
     @WebMethod(operationName = "doLogin")
-    public String doLogin(@WebParam(name = "identityNumber") String identityNumber, @WebParam(name = "securityCode") String securityCode) throws InvalidLoginException {
+    public String doLogin(@WebParam(name = "identityNumber") String identityNumber, @WebParam(name = "password") String securityCode) throws InvalidLoginException {
         
         System.out.println("*** AMS Client :: Login ***\n");
         System.out.println("Enter Identity Number> ");

@@ -17,6 +17,7 @@ import entity.PatientEntity;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 import util.exception.InvalidLoginException;
 
 public class MainApp {
@@ -89,17 +90,17 @@ public class MainApp {
     private void doLogin() throws InvalidLoginException {
         Scanner scanner = new Scanner(System.in);
         String identityNumber = "";
-        String securityCode = "";
+        String password = "";
 
         System.out.println("*** Self-Service Kiosk :: Login ***\n");
         System.out.print("Enter Identity Number> ");
         identityNumber = scanner.nextLine().trim();
-        System.out.print("Enter Security Code> ");
-        securityCode = scanner.nextLine().trim();
+        System.out.print("Enter Password> ");
+        password = scanner.nextLine().trim();
 
-        if (identityNumber.length() > 0 && securityCode.length() > 0) {
+        if (identityNumber.length() > 0 && password.length() > 0) {
             try {
-                currentPatientEntity = patientEntityControllerRemote.patientLogin(identityNumber, securityCode);
+                currentPatientEntity = patientEntityControllerRemote.patientLogin(identityNumber, password);
                 System.out.println("Login successful!\n");
             } catch (InvalidLoginException ex) {
                 System.out.println("Invalid login: " + ex.getMessage() + "\n");
@@ -128,41 +129,88 @@ public class MainApp {
                 break;
             } else {
                 newPatient.setIdentityNumber(identityNumber);
+                //Validating all inputs
                 while(true){
                     System.out.print("Enter Password> ");
                     String password = scanner.nextLine().trim();
-                    if(password.length()<6){
-                        System.out.println("Password must be at least 8 characters");
-                    }
-                    else if(password.length()>32){
-                        System.out.println("Password must be lesser than 33 characters");
+                    Pattern digitPattern = Pattern.compile("\\d{6}");
+                    if(!digitPattern.matcher(password).matches()){
+                        System.out.println("Password has to be 6 digit");
+                    } else {
+                        newPatient.setPassword(password);
+                        break;
+                    }                   
+                }
+                while(true){
+                    System.out.print("Enter First Name> ");
+                    String firstName = scanner.nextLine().trim();
+                    if(firstName.length()>32){
+                        System.out.println("Maximum first name length is 32");
                     }
                     else{
-                        newPatient.setSecurityCode(password);
+                        newPatient.setFirstName(firstName);
                         break;
-                    }
+                    }       
                 }
-                System.out.print("Enter First Name> ");
-                newPatient.setFirstName(scanner.nextLine().trim());
-                System.out.print("Enter Last Name> ");
-                newPatient.setLastName(scanner.nextLine().trim());
-                System.out.print("Enter Gender> ");
-                newPatient.setGender(scanner.nextLine().trim());
-                System.out.print("Enter Age> ");
-                newPatient.setAge(scanner.nextInt());
+                while(true){
+                    System.out.print("Enter Last Name> ");
+                    String lastName = scanner.nextLine().trim();
+                    if(lastName.length()>32){
+                        System.out.println("Maximum last name length is 32");
+                    }
+                    else{
+                        newPatient.setLastName(lastName);
+                        break;
+                    }       
+                }
+                while(true){
+                    System.out.print("Enter Gender> ");
+                    String gender = scanner.nextLine().trim();
+                    if(gender.length()>1){
+                        System.out.println("Please input either 'F' or 'M'!");
+                    }
+                    else if(gender.charAt(0)=='F'||gender.charAt(0)=='M'){
+                        newPatient.setGender(gender.charAt(0));
+                        break;
+                    } else {
+                        System.out.println("Gender can only either be 'F' or 'M'!");
+                    }                   
+                }                
+                while(true){
+                    System.out.print("Enter Age> ");
+                    Integer age = scanner.nextInt();
+                    Pattern digitPattern = Pattern.compile("\\d{3}");
+                    if(!digitPattern.matcher(age.toString()).matches()){
+                        System.out.println("Age can only have max of 3 digits");
+                    } else {
+                        newPatient.setAge(age);
+                        break;
+                    }                   
+                }
                 scanner.nextLine();
-                System.out.print("Enter Phone> ");
-                newPatient.setPhone(scanner.nextLine().trim());
-                System.out.print("Enter Address> ");
-                newPatient.setAddress(scanner.nextLine().trim());
-
-                List<PatientEntity> patientEntities = patientEntityControllerRemote.retrieveAllPatients();
-                newPatient.setPatientId((long) patientEntities.size() + 1);
-
+                while(true){
+                    System.out.print("Enter Phone> ");
+                    String phone = scanner.nextLine().trim();
+                    if(phone.length()>15){
+                        System.out.println("Maximum phone length can only be 15");
+                    } else {
+                        newPatient.setPhone(phone);
+                        break;
+                    }                 
+                }               
+                while(true){
+                    System.out.print("Enter Address> ");
+                    String address = scanner.nextLine().trim();
+                    if(address.length()>50){
+                        System.out.println("Maximum address length can only be 50");
+                    } else {
+                        newPatient.setAddress(address);
+                        break;
+                    }                 
+                }
                 patientEntityControllerRemote.createNewPatient(newPatient);
-                System.out.println("You has been registered successfully!\n");
+                System.out.println("Patient has been registered successfully!\n");
                 break;
-
             }
         }
     }

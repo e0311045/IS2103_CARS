@@ -17,9 +17,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import util.exception.DoctorAddAppointmentException;
-import util.exception.DoctorAddConsultationException;
 import util.exception.DoctorRemoveAppointmentException;
+import util.exception.LeaveApplicationException;
 
 @Entity
 public class DoctorEntity implements Serializable {
@@ -45,30 +44,35 @@ public class DoctorEntity implements Serializable {
     @JoinColumn(nullable = false)
     @OneToMany(mappedBy = "appointmentDoctor")
     private List<AppointmentEntity> appointmentEntities;
+    
+    @JoinColumn(nullable = false)
+    @OneToMany(mappedBy = "leaveDoctor")
+    private List<LeaveEntity> leaveEntities;
 
     public DoctorEntity() {
 
         this.appointmentEntities = new ArrayList<>();
         this.consultationEntities = new ArrayList<>();
+        this.leaveEntities = new ArrayList<>();
     }
 
-    public DoctorEntity(String firstName, String lastName, String registration) {
+    public DoctorEntity(String firstName, String lastName, String registration,String qualifications) {
         this();
-
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.registration = registration;
-    }
-
-    public DoctorEntity(Long doctorId, String firstName, String lastName, String registration, String qualifications) {
-        this();
-
-        this.doctorId = doctorId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.registration = registration;
         this.qualifications = qualifications;
     }
+//
+//    public DoctorEntity(Long doctorId, String firstName, String lastName, String registration, String qualifications) {
+//        this();
+//
+//        this.doctorId = doctorId;
+//        this.firstName = firstName;
+//        this.lastName = lastName;
+//        this.registration = registration;
+//        this.qualifications = qualifications;
+//    }
 
     @Override
     public int hashCode() {
@@ -146,26 +150,6 @@ public class DoctorEntity implements Serializable {
         this.consultationEntities = consultationEntities;
     }
 
-    public void addConsultation(ConsultationEntity consultation) throws DoctorAddConsultationException {
-        if (consultation != null && !this.getConsultationEntities().contains(consultation)) {
-            this.getConsultationEntities().add(consultation);
-        } else {
-            throw new DoctorAddConsultationException("Consultation already added to Doctor");
-        }
-    }
-
-    /*
-        public void removeConsultation(ConsultationEntity consultation) throws DoctorRemoveConsultationException
-    {
-        if(consultation != null && this.consultationEntities.contains(consultation))
-        {
-            this.getConsultationEntities().remove(consultation);
-        }
-        else
-        {
-            throw new DoctorRemoveConsultationException("Consultation has not been added to Doctor");
-        }
-    }*/
     public List<AppointmentEntity> getAppointmentEntities() {
         return appointmentEntities;
     }
@@ -174,19 +158,39 @@ public class DoctorEntity implements Serializable {
         this.appointmentEntities = appointmentEntities;
     }
 
-    public void addAppointment(AppointmentEntity appointment) throws DoctorAddAppointmentException {
-        if (appointment != null && !this.getAppointmentEntities().contains(appointment)) {
-            this.getAppointmentEntities().add(appointment);
-        } else {
-            throw new DoctorAddAppointmentException("Appointment already added to Doctor");
-        }
+    public List<LeaveEntity> getLeaveEntities() {
+        return leaveEntities;
     }
 
-    public void removeAppointment(AppointmentEntity appointment) throws DoctorRemoveAppointmentException {
-        if (appointment != null && this.appointmentEntities.contains(appointment)) {
+    public void setLeaveEntities(List<LeaveEntity> leaveEntities) {
+        this.leaveEntities = leaveEntities;
+    }
+    
+    public void addAppointment(AppointmentEntity appointment) {
+//        if (appointment != null && !this.getAppointmentEntities().contains(appointment)) {
+            this.getAppointmentEntities().add(appointment);
+//        } else {
+//            throw new DoctorAddAppointmentException("Appointment already added to Doctor");
+//        }
+    }
+
+    public void removeAppointment(AppointmentEntity appointment) {
+//        if (appointment != null && this.appointmentEntities.contains(appointment)) {
             this.getAppointmentEntities().remove(appointment);
-        } else {
-            throw new DoctorRemoveAppointmentException("Appointment has not been added to Doctor");
-        }
+//        } else {
+//            throw new DoctorRemoveAppointmentException("Appointment has not been added to Doctor");
+//        }
+    }
+    
+    public void addConsultation(ConsultationEntity consultation) {
+//        if (consultation != null && !this.getConsultationEntities().contains(consultation)) {
+            this.getConsultationEntities().add(consultation);
+//        } else {
+//            throw new DoctorAddConsultationException("Consultation already added to Doctor");
+//        }
+    }
+    
+    public void addLeave(LeaveEntity leaveEntity) {
+        this.getLeaveEntities().add(leaveEntity);      
     }
 }

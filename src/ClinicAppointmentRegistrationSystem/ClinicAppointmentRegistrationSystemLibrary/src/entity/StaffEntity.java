@@ -21,9 +21,9 @@ public class StaffEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long staffId;
-    @Column(length = 32, nullable = false)
+    @Column(length = 16, nullable = false)
     private String firstName;
-    @Column(length = 32, nullable = false)
+    @Column(length = 16, nullable = false)
     private String lastName;
     @Column(length = 32, unique = true)
     private String username;
@@ -33,10 +33,8 @@ public class StaffEntity implements Serializable {
     public StaffEntity() {
     }
 
-    public StaffEntity(Long staffId, String firstName, String lastName, String username, String password) {
+    public StaffEntity(String firstName, String lastName, String username, String password) {
         this();
-
-        this.staffId = staffId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;

@@ -19,6 +19,8 @@ public class DateHelper {
 
     public static SimpleDateFormat dateSDF = new SimpleDateFormat("yyyy-MM-dd");
     public static SimpleDateFormat timeSDF = new SimpleDateFormat("HH:mm");
+    public static SimpleDateFormat daySDF = new SimpleDateFormat("EEEE");
+    private static Date currentDate;
 
     public static Date convertToDate(String dateStr) throws InvalidDateTimeFormatException {
         Date date = new Date();
@@ -52,13 +54,52 @@ public class DateHelper {
         return diff;
     }
 
-    public static Date addHoursToDate(Date date, int hour) {
+    public static int getWeekNo(Date date) {
         Calendar cal = Calendar.getInstance();
-
         cal.setTime(date);
-        cal.add(Calendar.HOUR, hour);
-        
-        return cal.getTime();
+        return cal.get(Calendar.WEEK_OF_YEAR);
+    }
+    
+    public static String getDayOfWeek(Date date){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return daySDF.format(cal.get(Calendar.DAY_OF_WEEK));
+    }
+
+
+    public static Date getCurrentDate() {
+        return currentDate;
+    }
+
+    public static void setCurrentDate(Date aCurrentDate) {       
+        currentDate = aCurrentDate;
+    }
+    
+    public static int getClosingHour(String dayOfWeek)
+    {
+        switch (dayOfWeek) {
+            case "Monday":
+            case "Tuesday":
+            case "Wednesday":
+                return 17;
+            case "Thursday":
+                return 16;
+            default:
+                return 17;
+        }                
+    }
+    
+    public static int getClosingMinute(String dayOfWeek)
+    {
+        switch (dayOfWeek) {
+            case "Monday":
+            case "Tuesday":
+            case "Wednesday":
+            case "Friday":
+                return 30;
+            default:
+                return 00;
+        }                
     }
 }
 

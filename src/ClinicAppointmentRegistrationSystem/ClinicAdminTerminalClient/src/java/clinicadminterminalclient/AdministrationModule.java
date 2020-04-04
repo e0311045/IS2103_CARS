@@ -9,32 +9,47 @@ package clinicadminterminalclient;
 
 import ejb.session.stateful.RegistrationControllerRemote;
 import ejb.session.stateless.DoctorEntityControllerRemote;
+import ejb.session.stateless.LeaveEntityControllerRemote;
 import ejb.session.stateless.PatientEntityControllerRemote;
 import ejb.session.stateless.StaffEntityControllerRemote;
 import entity.StaffEntity;
 import entity.PatientEntity;
 import entity.DoctorEntity;
+import entity.LeaveEntity;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import util.date.DateHelper;
 import util.exception.DoctorNotFoundException;
+import util.exception.InvalidDateTimeFormatException;
+import util.exception.LeaveApplicationException;
+import util.exception.LeaveDeniedException;
+import util.exception.MaximumLeaveAppliedException;
 import util.exception.PatientNotFoundException;
 import util.exception.StaffNotFoundException;
 
 public class AdministrationModule {
-
-    private StaffEntityControllerRemote staffEntityControllerRemote;
-    private DoctorEntityControllerRemote doctorEntityControllerRemote;
-    private PatientEntityControllerRemote patientEntityControllerRemote;
-    private RegistrationControllerRemote registrationControllerRemote;
+    
+    //SessionBeans
+    private final StaffEntityControllerRemote staffEntityControllerRemote;
+    private final DoctorEntityControllerRemote doctorEntityControllerRemote;
+    private final PatientEntityControllerRemote patientEntityControllerRemote;
+    private final RegistrationControllerRemote registrationControllerRemote;
+    private final LeaveEntityControllerRemote leaveEntityControllerRemote;
+    
+    //Entities Variable
     private StaffEntity currentStaffEntity;
     private PatientEntity currentPatientEntity;
     private DoctorEntity currentDoctorEntity;
+    private LeaveEntity currentLeaveEntity;
 
-    public AdministrationModule(StaffEntityControllerRemote staffEntityControllerRemote, DoctorEntityControllerRemote doctorEntityControllerRemote, PatientEntityControllerRemote patientEntityControllerRemote, RegistrationControllerRemote registrationControllerRemote) {
+    public AdministrationModule(StaffEntityControllerRemote staffEntityControllerRemote, DoctorEntityControllerRemote doctorEntityControllerRemote, PatientEntityControllerRemote patientEntityControllerRemote, RegistrationControllerRemote registrationControllerRemote,LeaveEntityControllerRemote leaveEntityControllerRemote) {
         this.staffEntityControllerRemote = staffEntityControllerRemote;
         this.doctorEntityControllerRemote = doctorEntityControllerRemote;
         this.patientEntityControllerRemote = patientEntityControllerRemote;
         this.registrationControllerRemote = registrationControllerRemote;
+        this.leaveEntityControllerRemote = leaveEntityControllerRemote;
     }
 
     public void menuAdministration() {
@@ -126,10 +141,11 @@ public class AdministrationModule {
             System.out.println("3: Update Doctor");
             System.out.println("4: Delete Doctor");
             System.out.println("5: View All Doctor");
-            System.out.println("6: Back\n");
+            System.out.println("6: Leave Management");
+            System.out.println("7: Back\n");
             response = 0;
 
-            while (response < 1 || response > 6) {
+            while (response < 1 || response > 7) {
                 System.out.print("> ");
 
                 response = scanner.nextInt();
@@ -144,14 +160,17 @@ public class AdministrationModule {
                     deleteDoctor();
                 } else if (response == 5) {
                     viewAllDoctors();
-                } else if (response == 6) {
+                } else if (response == 6){
+                    manageDoctorLeave();
+                }
+                else if (response == 7) {
                     break;
                 } else {
                     System.out.println("Invalid option, please try again!\n");
                 }
             }
 
-            if (response == 6) {
+            if (response == 7) {
                 break;
             }
         }
@@ -212,9 +231,10 @@ public class AdministrationModule {
         System.out.print("Enter Last Name> ");
         newPatientEntity.setLastName(scanner.nextLine().trim());
         System.out.print("Enter Gender> ");
-        newPatientEntity.setGender(scanner.nextLine().trim());
-        System.out.print("Enter Security Code> ");
-        newPatientEntity.setSecurityCode(scanner.nextLine().trim());
+        String gender = scanner.nextLine();
+        newPatientEntity.setGender(gender.charAt(0));
+        System.out.print("Enter Password> ");
+        newPatientEntity.setPassword(scanner.nextLine().trim());
         System.out.print("Enter Age> ");
         newPatientEntity.setAge(scanner.nextInt());
         scanner.nextLine();
@@ -224,7 +244,6 @@ public class AdministrationModule {
         newPatientEntity.setAddress(scanner.nextLine().trim());
 
         List<PatientEntity> patientEntities = patientEntityControllerRemote.retrieveAllPatients();
-        newPatientEntity.setPatientId((long) patientEntities.size() + 1);
 
         newPatientEntity = patientEntityControllerRemote.createNewPatient(newPatientEntity);
         System.out.println("New patient created successfully!: " + newPatientEntity.getIdentityNumber() + "\n");
@@ -261,8 +280,8 @@ public class AdministrationModule {
 
         try {
             patientEntity = patientEntityControllerRemote.retrievePatientByIdentityNumber(idNumber);
-            System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", "Patient ID", "Identity Number", "First Name", "Last Name", "Gender", "Security Code", "Age", "Phone", "Address");
-            System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", patientEntity.getPatientId().toString(), patientEntity.getIdentityNumber(), patientEntity.getFirstName(), patientEntity.getLastName(), patientEntity.getGender(), patientEntity.getSecurityCode(), patientEntity.getAge(), patientEntity.getPhone(), patientEntity.getAddress());
+            System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", "Patient ID", "Identity Number", "First Name", "Last Name", "Gender", "Password", "Age", "Phone", "Address");
+            System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", patientEntity.getPatientId().toString(), patientEntity.getIdentityNumber(), patientEntity.getFirstName(), patientEntity.getLastName(), patientEntity.getGender(), patientEntity.getPassword(), patientEntity.getAge(), patientEntity.getPhone(), patientEntity.getAddress());
         } catch (PatientNotFoundException ex) {
             System.out.println("An error has occurred while retrieving patient: " + ex.getMessage() + "\n");
         }
@@ -284,13 +303,13 @@ public class AdministrationModule {
         System.out.print("Enter Gender (blank if no change)> ");
         input = scanner.nextLine().trim();
         if (input.length() > 0) {
-            patientEntity.setGender(input);
+            patientEntity.setGender(input.charAt(0));
         }
 
-        System.out.print("Enter Security Code (blank if no change)> ");
+        System.out.print("Enter Password (blank if no change)> ");
         input = scanner.nextLine().trim();
         if (input.length() > 0) {
-            patientEntity.setSecurityCode(input);
+            patientEntity.setPassword(input);
         }
 
         System.out.print("Enter Age (blank if no change)> ");
@@ -327,8 +346,8 @@ public class AdministrationModule {
 
         try {
             patientEntity = patientEntityControllerRemote.retrievePatientByIdentityNumber(idNumber);
-            System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", "Patient ID", "Identity Number", "First Name", "Last Name", "Gender", "Security Code", "Age", "Phone", "Address");
-            System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", patientEntity.getPatientId().toString(), patientEntity.getIdentityNumber(), patientEntity.getFirstName(), patientEntity.getLastName(), patientEntity.getGender(), patientEntity.getSecurityCode(), patientEntity.getAge(), patientEntity.getPhone(), patientEntity.getAddress());
+            System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", "Patient ID", "Identity Number", "First Name", "Last Name", "Gender", "Password", "Age", "Phone", "Address");
+            System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", patientEntity.getPatientId().toString(), patientEntity.getIdentityNumber(), patientEntity.getFirstName(), patientEntity.getLastName(), patientEntity.getGender(), patientEntity.getPassword(), patientEntity.getAge(), patientEntity.getPhone(), patientEntity.getAddress());
         } catch (PatientNotFoundException ex) {
             System.out.println("An error has occurred while retrieving patient: " + ex.getMessage() + "\n");
         }
@@ -355,10 +374,10 @@ public class AdministrationModule {
         System.out.println("*** CARS :: Administration Operation :: View All Patients ***\n");
 
         List<PatientEntity> patientEntities = patientEntityControllerRemote.retrieveAllPatients();
-        System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", "Patient ID", "Identity Number", "First Name", "Last Name", "Gender", "Security Code", "Age", "Phone", "Address");
+        System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", "Patient ID", "Identity Number", "First Name", "Last Name", "Gender", "Password", "Age", "Phone", "Address");
 
         for (PatientEntity patientEntity : patientEntities) {
-            System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", patientEntity.getPatientId().toString(), patientEntity.getIdentityNumber(), patientEntity.getFirstName(), patientEntity.getLastName(), patientEntity.getGender(), patientEntity.getSecurityCode(), patientEntity.getAge(), patientEntity.getPhone(), patientEntity.getAddress());
+            System.out.printf("%8s%20s%20s%20s%20s%20s%20s%20s%20s\n", patientEntity.getPatientId().toString(), patientEntity.getIdentityNumber(), patientEntity.getFirstName(), patientEntity.getLastName(), patientEntity.getGender(), patientEntity.getPassword(), patientEntity.getAge(), patientEntity.getPhone(), patientEntity.getAddress());
         }
 
         System.out.print("Press any key to continue...> ");
@@ -497,15 +516,58 @@ public class AdministrationModule {
         System.out.println("*** CARS :: Administration Operation :: View All Doctors ***\n");
 
         List<DoctorEntity> doctorEntities = doctorEntityControllerRemote.retrieveAllDoctors();
-        System.out.printf("%8s%20s%20s%20s%20s\n", "Staff ID", "First Name", "Last Name", "Registration", "Qualification");
+        System.out.printf("%8s%20s%20s%20s%20s\n", "Doctor ID", "First Name", "Last Name", "Registration", "Qualification");
 
-        for (DoctorEntity doctorEntity : doctorEntities) {
+        doctorEntities.forEach((doctorEntity) -> {
             System.out.printf("%8s%20s%20s%20s%20s\n", doctorEntity.getDoctorId().toString(), doctorEntity.getFirstName(), doctorEntity.getLastName(), doctorEntity.getRegistration(), doctorEntity.getQualifications());
-        }
+        });
 
         System.out.print("Press any key to continue...> ");
         scanner.nextLine();
 
+    }
+    
+    private void manageDoctorLeave(){
+        Scanner scanner = new Scanner(System.in);
+        LeaveEntity newLeaveEntity = new LeaveEntity();
+        
+        System.out.println("*** CARS :: Administration Operation :: Manage Doctor Leave ***\n");  
+        List<DoctorEntity> doctorEntities = doctorEntityControllerRemote.retrieveAllDoctors();
+        System.out.printf("%8s%20s%20s\n", "Doctor ID", "First Name", "Last Name");
+        doctorEntities.forEach((doctorEntity) -> {
+            System.out.printf("%8s%20s%20s\n", doctorEntity.getDoctorId().toString(), doctorEntity.getFirstName(), doctorEntity.getLastName());
+        });
+        DoctorEntity doctorEntity = new DoctorEntity();
+
+        System.out.print("Enter Doctor ID to Apply Leave For > ");
+        Long doctorId = scanner.nextLong();
+        try{
+            doctorEntity = doctorEntityControllerRemote.retrieveDoctorById(doctorId);
+            newLeaveEntity.setLeaveDoctor(doctorEntity);
+        } catch (DoctorNotFoundException ex){
+            System.out.println(ex.getMessage());
+        }           
+           
+        scanner.nextLine();
+        Date date = new Date();
+        while(true){
+            System.out.print("Enter Date of Leave > ");
+            String inputDate = scanner.nextLine();
+            try{
+                date = DateHelper.convertToDate(inputDate);
+                newLeaveEntity.setLeaveDate(date);
+                break;
+            } catch (InvalidDateTimeFormatException ex){
+                System.out.println(ex.getMessage());
+            }
+        }
+        newLeaveEntity.setWeekNo(DateHelper.getWeekNo(date));
+        try{           
+            newLeaveEntity = leaveEntityControllerRemote.createNewLeave(newLeaveEntity);
+            System.out.println("New Leave Applied Successfully For: " + newLeaveEntity.getLeaveDoctor().getFirstName() + " " + newLeaveEntity.getLeaveDoctor().getLastName() + " on " + date.toString() +"\n");
+        } catch (LeaveDeniedException | LeaveApplicationException | MaximumLeaveAppliedException ex) {
+            System.out.println(ex.getMessage());
+        }
     }
 
     private void addStaff() {
@@ -513,20 +575,64 @@ public class AdministrationModule {
         StaffEntity newStaffEntity = new StaffEntity();
 
         System.out.println("*** CARS :: Administration Operation :: Add Staff ***\n");
-        System.out.print("Enter First Name> ");
-        newStaffEntity.setFirstName(scanner.nextLine().trim());
-        System.out.print("Enter Last Name> ");
-        newStaffEntity.setLastName(scanner.nextLine().trim());
-        System.out.print("Enter Username> ");
-        newStaffEntity.setUsername(scanner.nextLine().trim());
-        System.out.print("Enter Password> ");
-        newStaffEntity.setPassword(scanner.nextLine().trim());
-
+        while(true){
+            System.out.print("Enter First Name> ");
+            String firstName = scanner.nextLine().trim();
+            if(firstName.length()>32){
+                System.out.println("Please keep First Name to 32 characters");
+            }
+            else {
+                newStaffEntity.setFirstName(firstName);
+                break;
+            }     
+        }
+        while(true){
+            System.out.print("Enter Last Name> ");
+            String lastName = scanner.nextLine().trim();
+            if(lastName.length()>32){
+                System.out.println("Please keep Last Name to 32 characters");
+            }
+            else {
+                newStaffEntity.setLastName(lastName);
+                break;
+            }     
+        }
+        while(true){
+            System.out.print("Enter Username> ");      
+            String userName = scanner.nextLine().trim();
+            if(userName.length()>32){
+                System.out.println("Please keep User Name to 32 characters");
+            }
+            else {
+                newStaffEntity.setUsername(userName);
+                break;
+            }     
+        }
+        while(true){
+            System.out.print("Enter Password> ");
+            String password = scanner.nextLine().trim();
+            if(password.length()>32){
+                System.out.println("Please keep password to 32 characters");
+            }
+            else {
+                newStaffEntity.setPassword(password);
+                break;
+            }     
+        }
         List<StaffEntity> staffEntities = staffEntityControllerRemote.retrieveAllStaffs();
-        newStaffEntity.setStaffId((long) staffEntities.size() + 1);
-
-        newStaffEntity = staffEntityControllerRemote.createNewStaff(newStaffEntity);
-        System.out.println("New staff created successfully!: " + newStaffEntity.getStaffId() + "\n");
+        
+        boolean hasUser = false;
+        for(StaffEntity se : staffEntities){
+            if(se.getUsername().equals(newStaffEntity.getUsername())){
+                System.out.println("Staff User Already Exist");
+                hasUser = true;
+                break;
+            }
+        }
+        if(!hasUser){
+            newStaffEntity = staffEntityControllerRemote.createNewStaff(newStaffEntity);
+            System.out.println("New staff created successfully!: " + newStaffEntity.getStaffId() + "\n");
+        }
     }
 
     private void viewStaffDetails() {

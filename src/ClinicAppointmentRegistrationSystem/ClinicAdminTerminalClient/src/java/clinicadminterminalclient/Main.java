@@ -11,6 +11,7 @@ import ejb.session.stateful.RegistrationControllerRemote;
 import ejb.session.stateless.AppointmentEntityControllerRemote;
 import ejb.session.stateless.ConsultationEntityControllerRemote;
 import ejb.session.stateless.DoctorEntityControllerRemote;
+import ejb.session.stateless.LeaveEntityControllerRemote;
 import ejb.session.stateless.PatientEntityControllerRemote;
 import ejb.session.stateless.StaffEntityControllerRemote;
 import java.text.ParseException;
@@ -18,6 +19,9 @@ import javax.ejb.EJB;
 import util.exception.AppointmentNotFoundException;
 
 public class Main {
+
+    @EJB
+    private static LeaveEntityControllerRemote leaveEntityControllerRemote;
 
     @EJB
     private static StaffEntityControllerRemote staffEntityControllerRemote;
@@ -36,10 +40,12 @@ public class Main {
 
     @EJB
     private static AppointmentEntityControllerRemote appointmentEntityControllerRemote;
+    
+    
 
     public static void main(String[] args) throws ParseException, AppointmentNotFoundException {
 
-        MainApp mainApp = new MainApp(staffEntityControllerRemote, doctorEntityControllerRemote, patientEntityControllerRemote, registrationControllerRemote, consultationEntityControllerRemote, appointmentEntityControllerRemote);
+        MainApp mainApp = new MainApp(staffEntityControllerRemote, doctorEntityControllerRemote, patientEntityControllerRemote, registrationControllerRemote, consultationEntityControllerRemote, appointmentEntityControllerRemote,leaveEntityControllerRemote);
         mainApp.runApp();
     }
 }

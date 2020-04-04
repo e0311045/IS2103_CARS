@@ -17,34 +17,29 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import util.exception.PatientAddAppointmentException;
-import util.exception.PatientAddConsultationException;
-import util.exception.PatientRemoveAppointmentException;
 
 @Entity
 public class PatientEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     @Id
     @Column(length = 9, unique = true, nullable = false)
     private String identityNumber;
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(unique = true)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long patientId;
+    @Column(length = 32, nullable = false)
+    private String password;
     @Column(length = 32, nullable = false)
     private String firstName;
     @Column(length = 32, nullable = false)
     private String lastName;
     @Column(length = 1, nullable = false)
-    private String gender;
-    @Column(length = 32, nullable = false)
-    private String securityCode;
+    private char gender;
     @Column(length = 3, nullable = false)
     private Integer age;
-    @Column(length = 8, nullable = false)
+    @Column(length = 15, nullable = false)
     private String phone;
-    @Column(length = 32, nullable = false)
+    @Column(length = 50, nullable = false)
     private String address;
 
     @OneToMany(mappedBy = "consultingPatient")
@@ -61,23 +56,21 @@ public class PatientEntity implements Serializable {
         this.consultationEntities = new ArrayList<>();
     }
 
-    public PatientEntity(String firstName, String lastName, String identityNumber, String securityCode) {
+//    public PatientEntity(String firstName, String lastName, String identityNumber, String securityCode) {
+//        this();
+//
+//        this.firstName = firstName;
+//        this.lastName = lastName;
+//        this.identityNumber = identityNumber;
+//        this.securityCode = securityCode;
+//    }
+
+    public PatientEntity(String identityNumber, String password, String firstName, String lastName, char gender, Integer age,  String phone, String address) {
         this();
-
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.identityNumber = identityNumber;
-        this.securityCode = securityCode;
-    }
-
-    public PatientEntity(Long patientId, String firstName, String lastName, String gender, String securityCode, Integer age, String identityNumber, String phone, String address) {
-        this();
-
-        this.patientId = patientId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.gender = gender;
-        this.securityCode = securityCode;
+        this.password = password;
         this.age = age;
         this.identityNumber = identityNumber;
         this.phone = phone;
@@ -91,6 +84,8 @@ public class PatientEntity implements Serializable {
 
         return hash;
     }
+    
+   
 
     @Override
     public boolean equals(Object object) {
@@ -136,20 +131,20 @@ public class PatientEntity implements Serializable {
         this.lastName = lastName;
     }
 
-    public String getGender() {
+    public char getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(char gender) {
         this.gender = gender;
     }
 
-    public String getSecurityCode() {
-        return securityCode;
+    public String getPassword() {
+        return password;
     }
 
-    public void setSecurityCode(String ecurityCode) {
-        this.securityCode = ecurityCode;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Integer getAge() {
@@ -192,12 +187,8 @@ public class PatientEntity implements Serializable {
         this.consultationEntities = consultationEntities;
     }
 
-    public void addConsultation(ConsultationEntity consultation) throws PatientAddConsultationException {
-        if (consultation != null && !this.getConsultationEntities().contains(consultation)) {
+    public void addConsultation(ConsultationEntity consultation) {
             this.getConsultationEntities().add(consultation);
-        } else {
-            throw new PatientAddConsultationException("Consultation already added to Patient");
-        }
     }
     
     public List<AppointmentEntity> getAppointmentEntities() {
@@ -207,20 +198,14 @@ public class PatientEntity implements Serializable {
     public void setAppointmentEntities(List<AppointmentEntity> appointmentEntities) {
         this.appointmentEntities = appointmentEntities;
     }
-
-    public void addAppointment(AppointmentEntity appointment) throws PatientAddAppointmentException {
-        if (appointment != null && !this.getAppointmentEntities().contains(appointment)) {
+    
+    public void addAppointment(AppointmentEntity appointment) {
             this.getAppointmentEntities().add(appointment);
-        } else {
-            throw new PatientAddAppointmentException("Appointment already added to Patient");
-        }
+
     }
 
-    public void removeAppointment(AppointmentEntity appointment) throws PatientRemoveAppointmentException {
-        if (appointment != null && this.appointmentEntities.contains(appointment)) {
+    public void removeAppointment(AppointmentEntity appointment) {
             this.getAppointmentEntities().remove(appointment);
-        } else {
-            throw new PatientRemoveAppointmentException("Appointment has not been added to Patient");
-        }
     }
+
 }

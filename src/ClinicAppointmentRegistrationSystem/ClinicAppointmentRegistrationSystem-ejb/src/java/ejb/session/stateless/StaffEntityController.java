@@ -27,29 +27,30 @@ import util.exception.StaffNotFoundException;
 public class StaffEntityController implements StaffEntityControllerLocal, StaffEntityControllerRemote {
 
     @PersistenceContext(unitName = "ClinicAppointmentRegistrationSystem-ejbPU")
-    private EntityManager entityManager;
+    private EntityManager em;
 
     public StaffEntityController() {
     }
 
     @Override
     public StaffEntity createNewStaff(StaffEntity newStaffEntity) {
-        entityManager.persist(newStaffEntity);
-        entityManager.flush();
+        
+        em.persist(newStaffEntity);
+        em.flush();
 
         return newStaffEntity;
     }
 
     @Override
     public List<StaffEntity> retrieveAllStaffs() {
-        Query query = entityManager.createQuery("SELECT s FROM StaffEntity s");
+        Query query = em.createQuery("SELECT s FROM StaffEntity s");
 
         return query.getResultList();
     }
 
     @Override
     public StaffEntity retrieveStaffByStaffId(Long staffId) throws StaffNotFoundException {
-        StaffEntity staffEntity = entityManager.find(StaffEntity.class, staffId);
+        StaffEntity staffEntity = em.find(StaffEntity.class, staffId);
 
         if (staffEntity != null) {
             return staffEntity;
@@ -60,7 +61,7 @@ public class StaffEntityController implements StaffEntityControllerLocal, StaffE
 
     @Override
     public StaffEntity retrieveStaffByUsername(String username) throws StaffNotFoundException {
-        Query query = entityManager.createQuery("SELECT s FROM StaffEntity s WHERE s.username = :inUsername");
+        Query query = em.createQuery("SELECT s FROM StaffEntity s WHERE s.username = :inUsername");
         query.setParameter("inUsername", username);
 
         try {
@@ -87,13 +88,13 @@ public class StaffEntityController implements StaffEntityControllerLocal, StaffE
 
     @Override
     public void updateStaff(StaffEntity staffEntity) {
-        entityManager.merge(staffEntity);
+        em.merge(staffEntity);
     }
 
     @Override
     public void deleteStaff(Long staffId) throws StaffNotFoundException {
         StaffEntity staffEntityToRemove = retrieveStaffByStaffId(staffId);
-        entityManager.remove(staffEntityToRemove);
+        em.remove(staffEntityToRemove);
     }
 
 }
