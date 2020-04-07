@@ -8,16 +8,15 @@ package ejb.session.stateless;
 import entity.LeaveEntity;
 import java.util.List;
 import util.exception.LeaveApplicationException;
-import util.exception.LeaveExistException;
-import util.exception.UnknownPersistenceException;
+import util.exception.LeaveDeniedException;
+import util.exception.LeaveNotFoundException;
+import util.exception.MaximumLeaveAppliedException;
 
 
 public interface LeaveEntityControllerRemote {
-    public Long createNewLeave(LeaveEntity newLeaveEntity) throws UnknownPersistenceException, LeaveApplicationException , LeaveExistException;
+    public LeaveEntity createNewLeave(LeaveEntity newLeaveEntity) throws MaximumLeaveAppliedException, LeaveApplicationException, LeaveDeniedException;
 
-    public List<LeaveEntity> retrieveAllLeaveByDoctor(Long doctorId);
+    public List<LeaveEntity> retrieveAllLeaveByDoctor(Long doctorId) throws LeaveNotFoundException;
     
     public LeaveEntity retrieveLeaveByDoctorWeek(Long doctorId, int weekNo);
-
-    public LeaveEntity retrieveLeaveById(Long id);
 }

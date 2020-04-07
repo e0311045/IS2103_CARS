@@ -9,22 +9,22 @@ package util.exception;
  *
  * @author leege
  */
-public class PatientAlreadyExistException extends Exception {
+public class MaximumLeaveAppliedException extends Exception {
 
     /**
-     * Creates a new instance of <code>PatientAlreadyExistException</code>
+     * Creates a new instance of <code>MaximumLeaveAppliedException</code>
      * without detail message.
      */
-    public PatientAlreadyExistException() {
+    public MaximumLeaveAppliedException() {
     }
 
     /**
-     * Constructs an instance of <code>PatientAlreadyExistException</code> with
+     * Constructs an instance of <code>MaximumLeaveAppliedException</code> with
      * the specified detail message.
      *
      * @param msg the detail message.
      */
-    public PatientAlreadyExistException(String msg) {
+    public MaximumLeaveAppliedException(String msg) {
         super(msg);
     }
 }

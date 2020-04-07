@@ -6,7 +6,7 @@
             <file>file:/C:/netBeansProject/IS2103_CARS/src/ClinicAppointmentRegistrationSystem/ClinicAppointmentRegistrationSystemLibrary/src/entity/ConsultationEntity.java</file>
             <file>file:/C:/netBeansProject/IS2103_CARS/src/ClinicAppointmentRegistrationSystem/ClinicAppointmentRegistrationSystemLibrary/src/ejb/session/stateless/StaffEntityControllerRemote.java</file>
             <file>file:/C:/netBeansProject/IS2103_CARS/src/ClinicAppointmentRegistrationSystem/ClinicAppointmentRegistrationSystemLibrary/src/entity/DoctorEntity.java</file>
-            <file>file:/C:/netBeansProject/IS2103_CARS/src/ClinicAppointmentRegistrationSystem/ClinicAppointmentRegistrationSystemLibrary/src/entity/StaffEntity.java</file>
+            <file>file:/C:/netBeansProject/IS2103_CARS/src/ClinicAppointmentRegistrationSystem/ClinicAppointmentRegistrationSystemLibrary/src/entity/AppointmentEntity.java</file>
         </group>
     </open-files>
 </project-private>

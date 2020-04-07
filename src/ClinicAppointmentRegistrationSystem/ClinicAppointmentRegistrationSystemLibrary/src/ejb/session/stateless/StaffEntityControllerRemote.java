@@ -12,11 +12,10 @@ import java.util.List;
 import util.exception.InvalidLoginException;
 import util.exception.StaffAlreadyExistException;
 import util.exception.StaffNotFoundException;
-import util.exception.UnknownPersistenceException;
 
 public interface StaffEntityControllerRemote {
 
-    public Long createNewStaff(StaffEntity newStaffEntity);
+    StaffEntity createNewStaff(StaffEntity newStaffEntity);
     
     List<StaffEntity> retrieveAllStaffs();
     

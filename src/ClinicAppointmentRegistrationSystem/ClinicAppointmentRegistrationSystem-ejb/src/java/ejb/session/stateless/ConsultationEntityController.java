@@ -31,10 +31,34 @@ public class ConsultationEntityController implements ConsultationEntityControlle
     }
 
     @Override
-    public void createConsultation(ConsultationEntity newConsultationEntity, String identityNumber, Long doctorId)
+    public void createConsultation(ConsultationEntity newConsultationEntity, String identityNumber, Long doctorId)// throws PatientAddConsultationException
     {
         em.persist(newConsultationEntity);
-        em.flush();      
+        PatientEntity patient = em.find(PatientEntity.class, identityNumber);
+
+        if (patient != null) {
+            newConsultationEntity.setPatient(patient);
+            patient.addConsultation(newConsultationEntity);
+//            try {
+//                
+//            } catch (PatientAddConsultationException ex) {
+//                Logger.getLogger(ConsultationEntityController.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+        }
+
+        DoctorEntity doctor = em.find(DoctorEntity.class, doctorId);
+
+        if (doctor != null) {
+            newConsultationEntity.setDoctor(doctor);
+            doctor.addConsultation(newConsultationEntity);
+        }
+//            try {
+//                
+//            } catch (DoctorAddConsultationException ex) {
+//                Logger.getLogger(ConsultationEntityController.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
+        em.flush();
     }
 
     @Override

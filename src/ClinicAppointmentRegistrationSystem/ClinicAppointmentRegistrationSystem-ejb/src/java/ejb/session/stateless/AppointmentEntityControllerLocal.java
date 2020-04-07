@@ -10,15 +10,11 @@ package ejb.session.stateless;
 import entity.AppointmentEntity;
 import java.util.Date;
 import java.util.List;
-import util.exception.CreateAppointmentException;
 import util.exception.AppointmentNotFoundException;
-import util.exception.UnknownPersistenceException;
 
 public interface AppointmentEntityControllerLocal {
-    
-    public Long createAppointment(AppointmentEntity newAppointmentEntity);
-    
-    public Long createAppointment(AppointmentEntity newAppointmentEntity, String identityNumber, Long doctorId) throws CreateAppointmentException, UnknownPersistenceException;
+
+    void createAppointment(AppointmentEntity newAppointmentEntity, String identityNumber, Long doctorId);
 
     List<AppointmentEntity> retrieveAllAppointments();
 
@@ -27,6 +23,4 @@ public interface AppointmentEntityControllerLocal {
     AppointmentEntity retrieveAppointmentByAppointmentId(Long appointmentId) throws AppointmentNotFoundException;
 
     public AppointmentEntity retrieveAppointmentByDoctorDate(Long doctorId, Date date);
-
-    
 }

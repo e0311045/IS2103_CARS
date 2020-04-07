@@ -17,15 +17,8 @@ import entity.PatientEntity;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.regex.Pattern;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import util.exception.InvalidLoginException;
-import util.exception.PatientAlreadyExistException;
-import util.exception.UnknownPersistenceException;
 
 public class MainApp {
 
@@ -39,10 +32,6 @@ public class MainApp {
     private PatientEntity currentPatientEntity;
     private RegistrationModule registrationModule;
     private AppointmentModule appointmentModule;
-    
-    private ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-    private Validator validator = validatorFactory.getValidator();
-    
     public int queue = 0;
 
     public MainApp() {
@@ -127,47 +116,101 @@ public class MainApp {
     // get details and register patient into database
     private void registerPatient() {
         Scanner scanner = new Scanner(System.in);
-        Integer response = 0;
-        currentPatientEntity = new PatientEntity();
+        PatientEntity newPatient = new PatientEntity();
 
         System.out.println("*** Self-Service Kiosk :: Register ***\n");
+        List<PatientEntity> patients = patientEntityControllerRemote.retrieveAllPatients();
 
-
-        System.out.println("*** CARS :: Administration Operation :: Add Patient ***\n");
         System.out.print("Enter Identity Number> ");
-        currentPatientEntity.setIdentityNumber(scanner.nextLine().trim());
-        System.out.print("Enter First Name> ");
-        currentPatientEntity.setFirstName(scanner.nextLine().trim());
-        System.out.print("Enter Last Name> ");
-        currentPatientEntity.setLastName(scanner.nextLine().trim());
-        System.out.print("Enter Gender (please enter only F/M)> ");
-        String gender = scanner.nextLine();
-        currentPatientEntity.setGender(gender.charAt(0));
-        System.out.print("Enter Password> ");
-        currentPatientEntity.setPassword(scanner.nextLine().trim());
-        System.out.print("Enter Age (please enter only numeric digits eg. 20)> ");
-        currentPatientEntity.setAge(scanner.nextInt());
-        scanner.nextLine();
-        System.out.print("Enter Phone> ");
-        currentPatientEntity.setPhone(scanner.nextLine().trim());
-        System.out.print("Enter Address> ");
-        currentPatientEntity.setAddress(scanner.nextLine().trim());
-
-        Set<ConstraintViolation<PatientEntity>> errors = validator.validate(currentPatientEntity);
-        
-        if(errors.isEmpty()){
-            try{
-                Long patientId = patientEntityControllerRemote.createNewPatient(currentPatientEntity);
-                System.out.println("Patient " + patientId + " has been created!");
-            } catch (PatientAlreadyExistException ex){
-                System.out.println("An error has occurred while creating the new Patient!: The patient already exist\n");
-            } catch (UnknownPersistenceException ex){
-                System.out.println("An unknown error has occurred while creating a new Patient!: " + ex.getMessage() + "\n");
-            }
-        } else {
-            System.out.println("Unable to create Patient due to the following validation errors: ");
-            for (ConstraintViolation error : errors) {
-                System.out.println("Validation Error: " + error.getPropertyPath() + " - " + error.getInvalidValue() + ": " + error.getMessage());
+        String identityNumber = scanner.nextLine().trim();
+        for (PatientEntity patient : patients) {
+            if (patient.getIdentityNumber().equals(identityNumber)) {
+                System.out.println("Patient is already created.");
+                break;
+            } else {
+                newPatient.setIdentityNumber(identityNumber);
+                //Validating all inputs
+                while(true){
+                    System.out.print("Enter Password> ");
+                    String password = scanner.nextLine().trim();
+                    Pattern digitPattern = Pattern.compile("\\d{6}");
+                    if(!digitPattern.matcher(password).matches()){
+                        System.out.println("Password has to be 6 digit");
+                    } else {
+                        newPatient.setPassword(password);
+                        break;
+                    }                   
+                }
+                while(true){
+                    System.out.print("Enter First Name> ");
+                    String firstName = scanner.nextLine().trim();
+                    if(firstName.length()>32){
+                        System.out.println("Maximum first name length is 32");
+                    }
+                    else{
+                        newPatient.setFirstName(firstName);
+                        break;
+                    }       
+                }
+                while(true){
+                    System.out.print("Enter Last Name> ");
+                    String lastName = scanner.nextLine().trim();
+                    if(lastName.length()>32){
+                        System.out.println("Maximum last name length is 32");
+                    }
+                    else{
+                        newPatient.setLastName(lastName);
+                        break;
+                    }       
+                }
+                while(true){
+                    System.out.print("Enter Gender> ");
+                    String gender = scanner.nextLine().trim();
+                    if(gender.length()>1){
+                        System.out.println("Please input either 'F' or 'M'!");
+                    }
+                    else if(gender.charAt(0)=='F'||gender.charAt(0)=='M'){
+                        newPatient.setGender(gender.charAt(0));
+                        break;
+                    } else {
+                        System.out.println("Gender can only either be 'F' or 'M'!");
+                    }                   
+                }                
+                while(true){
+                    System.out.print("Enter Age> ");
+                    Integer age = scanner.nextInt();
+                    Pattern digitPattern = Pattern.compile("\\d{3}");
+                    if(!digitPattern.matcher(age.toString()).matches()){
+                        System.out.println("Age can only have max of 3 digits");
+                    } else {
+                        newPatient.setAge(age);
+                        break;
+                    }                   
+                }
+                scanner.nextLine();
+                while(true){
+                    System.out.print("Enter Phone> ");
+                    String phone = scanner.nextLine().trim();
+                    if(phone.length()>15){
+                        System.out.println("Maximum phone length can only be 15");
+                    } else {
+                        newPatient.setPhone(phone);
+                        break;
+                    }                 
+                }               
+                while(true){
+                    System.out.print("Enter Address> ");
+                    String address = scanner.nextLine().trim();
+                    if(address.length()>50){
+                        System.out.println("Maximum address length can only be 50");
+                    } else {
+                        newPatient.setAddress(address);
+                        break;
+                    }                 
+                }
+                patientEntityControllerRemote.createNewPatient(newPatient);
+                System.out.println("Patient has been registered successfully!\n");
+                break;
             }
         }
     }
