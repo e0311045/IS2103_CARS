@@ -14,8 +14,11 @@ import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import util.exception.DoctorAlreadyExistException;
 import util.exception.DoctorNotFoundException;
+import util.exception.UnknownPersistenceException;
 
 @Stateless
 @Local(DoctorEntityControllerLocal.class)
@@ -30,11 +33,23 @@ public class DoctorEntityController implements DoctorEntityControllerLocal, Doct
     }
 
     @Override
-    public DoctorEntity createNewDoctor(DoctorEntity newDoctorEntity) {
-        em.persist(newDoctorEntity);
-        em.flush();
+    public Long createNewDoctor(DoctorEntity newDoctorEntity) throws DoctorAlreadyExistException, UnknownPersistenceException {
+        try{
+            em.persist(newDoctorEntity);
+            em.flush();
 
-        return newDoctorEntity;
+            return newDoctorEntity.getDoctorId();
+        } catch (PersistenceException ex) {
+            if(ex.getCause()!= null && ex.getCause().getClass().getName().equals("org.eclipse.persistence.exceptions.DatabaseException")) {
+                if(ex.getCause().getCause() != null && ex.getCause().getCause().getClass().getName().equals("java.sql.SQLIntegrityConstraintViolationException")){
+                    throw new DoctorAlreadyExistException();
+                } else {
+                    throw new UnknownPersistenceException(ex.getMessage());
+                }
+            } else {                
+                throw new UnknownPersistenceException(ex.getMessage());
+            }
+        }
     }
 
     @Override

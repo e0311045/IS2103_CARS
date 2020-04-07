@@ -9,11 +9,13 @@ package ejb.session.stateless;
 
 import entity.DoctorEntity;
 import java.util.List;
+import util.exception.DoctorAlreadyExistException;
 import util.exception.DoctorNotFoundException;
+import util.exception.UnknownPersistenceException;
 
 public interface DoctorEntityControllerLocal {
 
-    DoctorEntity createNewDoctor(DoctorEntity newDoctorEntity);
+    public Long createNewDoctor(DoctorEntity newDoctorEntity) throws DoctorAlreadyExistException, UnknownPersistenceException;
 
     DoctorEntity retrieveDoctorById(Long id) throws DoctorNotFoundException;
 

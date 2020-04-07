@@ -16,9 +16,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import util.exception.InvalidLoginException;
+import util.exception.StaffAlreadyExistException;
 import util.exception.StaffNotFoundException;
+import util.exception.UnknownPersistenceException;
 
 @Stateless
 @Local(StaffEntityControllerLocal.class)
@@ -33,16 +36,20 @@ public class StaffEntityController implements StaffEntityControllerLocal, StaffE
     }
 
     @Override
-    public StaffEntity createNewStaff(StaffEntity newStaffEntity) {
-        
-        em.persist(newStaffEntity);
-        em.flush();
+    public Long createNewStaff(StaffEntity newStaffEntity) {
+//        try{
+            em.persist(newStaffEntity);
+            em.flush();
 
-        return newStaffEntity;
+            return newStaffEntity.getStaffId();
+//        } catch (PersistenceException ex) {
+//            throw new StaffAlreadyExistException(ex.getMessage());
+//        }
     }
 
     @Override
     public List<StaffEntity> retrieveAllStaffs() {
+        
         Query query = em.createQuery("SELECT s FROM StaffEntity s");
 
         return query.getResultList();

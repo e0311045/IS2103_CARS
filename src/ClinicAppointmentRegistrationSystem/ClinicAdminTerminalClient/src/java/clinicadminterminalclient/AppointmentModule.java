@@ -17,16 +17,18 @@ import entity.StaffEntity;
 import entity.PatientEntity;
 import entity.DoctorEntity;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
+import util.date.DateHelper;
 import util.exception.AppointmentNotFoundException;
+import util.exception.CreateAppointmentException;
 import util.exception.DoctorNotFoundException;
+import util.exception.InvalidDateTimeFormatException;
 import util.exception.PatientNotFoundException;
+import util.exception.UnknownPersistenceException;
 
 public class AppointmentModule {
 
@@ -35,9 +37,12 @@ public class AppointmentModule {
     private PatientEntityControllerRemote patientEntityControllerRemote;
     private RegistrationControllerRemote registrationControllerRemote;
     private AppointmentEntityControllerRemote appointmentEntityControllerRemote;
+    
+    //Entity Attributes
     private StaffEntity currentStaffEntity;
     private PatientEntity currentPatientEntity;
     private DoctorEntity currentDoctorEntity;
+    
 
     public AppointmentModule(StaffEntityControllerRemote staffEntityControllerRemote, DoctorEntityControllerRemote doctorEntityControllerRemote, PatientEntityControllerRemote patientEntityControllerRemote, RegistrationControllerRemote registrationControllerRemote, AppointmentEntityControllerRemote appointmentEntityControllerRemote) {
         this.staffEntityControllerRemote = staffEntityControllerRemote;
@@ -91,7 +96,6 @@ public class AppointmentModule {
         System.out.print("Enter Patient Identity Number> ");
         String identityNumber = scanner.nextLine().trim();
         // search appointment set by patient
-        // search patient
         try {
             currentPatientEntity = patientEntityControllerRemote.retrievePatientByIdentityNumber(identityNumber);
         } catch (PatientNotFoundException ex) {
@@ -102,15 +106,13 @@ public class AppointmentModule {
         System.out.println("Appointments:");
         // list appointment
         List<AppointmentEntity> appointmentEntities = appointmentEntityControllerRemote.retrieveAllAppointments();
-        System.out.printf("%s%s%s%s\n", "Id|", "Date      |", "Time  |", "Doctor");
-
-        DateFormat df = new SimpleDateFormat("HH:mm");
-        DateFormat datef = new SimpleDateFormat("yyyy-MM-dd");
+        System.out.printf("%3s%11s%6s%64s\n", "Id|", "Date      |", "Time  |", "Doctor");
 
         if (appointmentEntities != null) {
             for (AppointmentEntity appointmentEntity : appointmentEntities) {
                 if (appointmentEntity.getPatient().getIdentityNumber().equals(identityNumber)) {
-                    System.out.printf("%s%s%s%s\n", appointmentEntity.getAppointmentId().toString(), "| " + datef.format(appointmentEntity.getAppointmentDate()), "| " + df.format(appointmentEntity.getAppointmentTime()), "| " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName());
+                    System.out.printf("%3s%11s%6s%64s\n", appointmentEntity.getAppointmentId().toString(), "| " + DateHelper.dateSDF.format(appointmentEntity.getAppointmentDate())
+                                        , "| " + DateHelper.timeSDF.format(appointmentEntity.getAppointmentTime()), "| " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName());
                 }
             }
         } else {
@@ -122,7 +124,8 @@ public class AppointmentModule {
     private void addAppointment() {
         Scanner scanner = new Scanner(System.in);
         AppointmentEntity newAppointmentEntity = new AppointmentEntity();
-        String inputDate = "";
+        Date inputDate;
+        Date inputTime;
         Date currentDate = new Date();
 
         System.out.println("*** CARS :: Appointment Operation :: Add Appointment ***\n");
@@ -147,98 +150,81 @@ public class AppointmentModule {
         }
 
         scanner.nextLine();
+        
+        while(true){
+            try{
+                System.out.print("Enter Date> ");
+                inputDate = DateHelper.convertToDate(scanner.nextLine().trim());               
+                break;
+            } catch (InvalidDateTimeFormatException ex){
+                System.out.println(ex.getMessage());
+            }
+        }
+        if (inputDate.after(currentDate)) {
+            try {          
+                newAppointmentEntity.setAppointmentDate(inputDate);
 
-        try {
-            System.out.print("Enter Date> ");
-            inputDate = scanner.nextLine().trim();
-
-            DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Date date = sdf.parse(inputDate);
-            currentDate = sdf.parse(sdf.format(new Date()));
-
-            if (date.after(currentDate)) {
-                newAppointmentEntity.setAppointmentDate(date);
-
-                Calendar cal = Calendar.getInstance();
-                Calendar today = Calendar.getInstance();
-                String availability[] = new String[16];
-
-                long ONE_MINUTE_IN_MILLIS = 60000;
-                cal.set(Calendar.HOUR_OF_DAY, 9);
-                cal.set(Calendar.MINUTE, 00);
-
-                long t = cal.getTimeInMillis();
-                Date tempTime = new Date(t);
-                DateFormat df = new SimpleDateFormat("HH:mm"); // dd-MM-yy date
-
-                for (int i = 0; i < 16; i++) { // an array of time slots from 0900 to 1600
-                    availability[i] = df.format(tempTime);
-                    //System.out.println(availability[i]);
-                    t += 30 * ONE_MINUTE_IN_MILLIS;
-                    tempTime = new Date(t);
-                }
-
-                long timeToday = today.getTimeInMillis();
-                Date dateToday = new Date(timeToday);
-
+                String[] availability = DateHelper.getAvailabilitySlots(inputDate);
                 //availability
-                System.out.println("Availability for " + currentDoctorEntity.getFirstName() + " " + currentDoctorEntity.getLastName() + " on " + inputDate + ":");
+                System.out.println("Availability for " + currentDoctorEntity.getFirstName() + " " 
+                                    + currentDoctorEntity.getLastName() + " on " + inputDate.toString() + ":");
                 List<AppointmentEntity> appointments = appointmentEntityControllerRemote.retrieveAllAppointments();
                 if (appointments != null) {
                     // for loop to keep track of 30 mins interval
-                    for (int i = 0; i < 16; i++) { // i == 16 so it will only stop at 4.30pm
-                        for (AppointmentEntity appointment : appointments) { // date check
+                    for (int i = 0; i < availability.length ; i++) { // Depending on the day
+                        for (AppointmentEntity appointment : appointments) { // date check        
+                            Date apptTime = appointment.getAppointmentTime();
+                            String apptTimeStr = DateHelper.timeSDF.format(apptTime);
                             // if date compare == 0, time not equal, print time
-                            Date temp = appointment.getAppointmentTime();
-                            String stringTime = df.format(temp);
-                            if (date.compareTo(appointment.getAppointmentDate()) == 0 && stringTime.equals(availability[i]) && (Objects.equals(appointment.getDoctor().getDoctorId(), doctorId))) {
+                            if (inputDate.compareTo(appointment.getAppointmentDate()) == 0 && apptTimeStr.equals(availability[i]) 
+                                && (Objects.equals(appointment.getDoctor().getDoctorId(), doctorId))) {
                                 availability[i] = "";
                             }
                         }
-                    }
-                }
-
-                for (int i = 0; i < 16; i++) { // print availabililty from array
-                    if (availability[i].equals("")) {
+                        if (availability[i].equals("")) {
                         System.out.print("");
-                    } else {
+                        } else {
                         System.out.print(availability[i] + " ");
+                        }
                     }
                 }
+//
+//                for (int i = 0; i < 16; i++) { // print availabililty from array
+//                    if (availability[i].equals("")) {
+//                        System.out.print("");
+//                    } else {
+//                        System.out.print(availability[i] + " ");
+//                    }
+//                }
                 System.out.println();
-
-                System.out.print("Enter Time> ");
-                String inputTime = scanner.nextLine().trim();
-                try {
-                    DateFormat formatter = new SimpleDateFormat("HH:mm");
-                    Date time = formatter.parse(inputTime);
-                    newAppointmentEntity.setAppointmentTime(time);
-
-                } catch (ParseException ex) {
-                    System.out.println("An error has occurred while retrieving date: " + ex.getMessage() + "\n");
+                
+                while(true){
+                    try{
+                        System.out.print("Enter Time > ");
+                        inputTime = DateHelper.convertToTime(scanner.nextLine().trim());               
+                        break;
+                    } catch (InvalidDateTimeFormatException ex){
+                        System.out.println(ex.getMessage());
+                    }
                 }
+                
                 System.out.print("Enter Patient Identity Number> ");
                 String identityNumber = scanner.nextLine().trim();
-
-                try {
-                    currentPatientEntity = patientEntityControllerRemote.retrievePatientByIdentityNumber(identityNumber);
-                } catch (PatientNotFoundException ex) {
-                    System.out.println("An error has occurred while retrieving patient: " + ex.getMessage() + "\n");
-                }
-
-                newAppointmentEntity.setAppointmentId((long) appointments.size() + 1);
-
+                currentPatientEntity = patientEntityControllerRemote.retrievePatientByIdentityNumber(identityNumber);
+                
                 //add appointment
                 appointmentEntityControllerRemote.createAppointment(newAppointmentEntity, identityNumber, doctorId);
-                System.out.println("Appointment: " + currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " and " + currentDoctorEntity.getFirstName() + " " + currentDoctorEntity.getLastName() + " at " + inputTime + " on " + inputDate + " has been added.");
-                System.out.println();
-
-            } else {
-                System.out.println("Appointment can only be booked at least one day in advanced!");
-            }
-
-        } catch (ParseException ex) {
-            System.out.println("An error has occurred while retrieving date: " + ex.getMessage() + "\n");
+                System.out.println(currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() 
+                                    + " appointment with " + currentDoctorEntity.getFirstName() + " " + currentDoctorEntity.getLastName() 
+                                    + " at " + inputTime + " on " + inputDate + " has been added.");
+                System.out.println();               
+            } catch (CreateAppointmentException | UnknownPersistenceException ex){
+                System.out.println(ex.getMessage());
+            } catch (PatientNotFoundException ex) {
+                System.out.println("An error has occurred while retrieving patient: " + ex.getMessage() + "\n");
+            } 
+        } else {
+            System.out.println("Appointment can only be booked at least one day in advanced!");
         }
     }
 

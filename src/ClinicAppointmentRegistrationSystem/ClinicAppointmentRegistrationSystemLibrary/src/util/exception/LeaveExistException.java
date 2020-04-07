@@ -9,22 +9,22 @@ package util.exception;
  *
  * @author leege
  */
-public class LeaveDeniedException extends Exception {
+public class LeaveExistException extends Exception {
 
     /**
-     * Creates a new instance of <code>LeaveDeniedException</code> without
-     * detail message.
+     * Creates a new instance of <code>LeaveExistException</code> without detail
+     * message.
      */
-    public LeaveDeniedException() {
+    public LeaveExistException() {
     }
 
     /**
-     * Constructs an instance of <code>LeaveDeniedException</code> with the
+     * Constructs an instance of <code>LeaveExistException</code> with the
      * specified detail message.
      *
      * @param msg the detail message.
      */
-    public LeaveDeniedException(String msg) {
+    public LeaveExistException(String msg) {
         super(msg);
     }
 }

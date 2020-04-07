@@ -17,6 +17,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class ConsultationEntity implements Serializable {
@@ -24,7 +25,7 @@ public class ConsultationEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long consultationId;
     
     @ManyToOne(optional = false)
@@ -35,8 +36,9 @@ public class ConsultationEntity implements Serializable {
     @JoinColumn(nullable = false)
     private DoctorEntity consultingDoctor;
     
+    @NotNull
     @Temporal(TemporalType.TIME)
-    private Date time; //HH:MM
+    private Date consultTime; //HH:MM
 
     public ConsultationEntity() {
 
@@ -45,7 +47,7 @@ public class ConsultationEntity implements Serializable {
     public ConsultationEntity(Long consultationId, Date time) {
         this();
         this.consultationId = consultationId;
-        this.time = time;
+        this.consultTime = time;
     }
 
     public Long getConsultationId() {
@@ -72,11 +74,11 @@ public class ConsultationEntity implements Serializable {
         this.consultingDoctor = doctor;
     }
 
-    public Date getTime() {
-        return time;
+    public Date getConsultTime() {
+        return consultTime;
     }
 
-    public void setTime(Date time) {
-        this.time = time;
+    public void setConsultTime(Date consultTime) {
+        this.consultTime = consultTime;
     }
 }

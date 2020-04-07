@@ -14,15 +14,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.jws.WebService;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.ejb.Stateless;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.exception.AppointmentNotFoundException;
+import util.exception.CreateAppointmentException;
 import util.exception.DoctorNotFoundException;
 import util.exception.InvalidLoginException;
+import util.exception.PatientAlreadyExistException;
 import util.exception.PatientNotFoundException;
+import util.exception.UnknownPersistenceException;
 
 
 @WebService(serviceName = "AMSWebService")
@@ -38,7 +46,9 @@ public class AMSWebService {
     @EJB
     private AppointmentEntityControllerRemote appointmentEntityControllerRemote; 
    
-
+    private ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+    private Validator validator = validatorFactory.getValidator();
+    
     @WebMethod(operationName = "registerPatient")
     public String registerPatient(@WebParam(name = "identityNumber") String identityNumber, 
             @WebParam(name = "password") String password,
@@ -47,8 +57,8 @@ public class AMSWebService {
             @WebParam(name = "gender") char gender,
             @WebParam(name = "age") Integer age,
             @WebParam(name = "phone") String phone,
-            @WebParam(name = "address") String address
-    ) {
+            @WebParam(name = "address") String address)  
+    {
         System.out.println("*** AMS Client :: Register ***\n");
         Scanner scanner = new Scanner(System.in);
         PatientEntity newPatient = new PatientEntity();
@@ -70,37 +80,49 @@ public class AMSWebService {
         newPatient.setPhone(phone);
         newPatient.setAddress(address);
         
-        List<PatientEntity> patientEntities = patientEntityControllerRemote.retrieveAllPatients();
-        newPatient.setPatientId((long)patientEntities.size() + 1);
+        Set<ConstraintViolation<PatientEntity>> errors = validator.validate(newPatient);
         
-        patientEntityControllerRemote.createNewPatient(newPatient);
-        //System.out.println("You has been registered successfully!\n");
-        
-        return "You has been registered successfully!";
+        if(errors.isEmpty()){
+            try{
+                Long patientId = patientEntityControllerRemote.createNewPatient(newPatient);
+                
+            } catch (PatientAlreadyExistException ex){
+                System.out.println("An error has occurred while creating the new Patient!: The patient already exist");
+            } catch (UnknownPersistenceException ex){
+                System.out.println("An unknown error has occurred while creating a new Patient!: " + ex.getMessage());
+            }
+        } else {
+            String msg = "Unable to create Patient due to the following validation errors: \n";
+            for (ConstraintViolation error : errors) {
+                msg += "Validation Error: " + error.getPropertyPath() + " - " + error.getInvalidValue() + ": " + error.getMessage() +"\n";
+            }
+            return msg;
+        }
+        return "Registration is successful!";
     }
 
     @WebMethod(operationName = "doLogin")
-    public String doLogin(@WebParam(name = "identityNumber") String identityNumber, @WebParam(name = "password") String securityCode) throws InvalidLoginException {
+    public String doLogin(@WebParam(name = "identityNumber") String identityNumber, @WebParam(name = "password") String password) throws InvalidLoginException {
         
         System.out.println("*** AMS Client :: Login ***\n");
         System.out.println("Enter Identity Number> ");
-        System.out.println("Enter Security Code> ");
+        System.out.println("Enter Password> ");
         PatientEntity currentPatientEntity = new PatientEntity();
         
         try {
-                currentPatientEntity = patientEntityControllerRemote.patientLogin(identityNumber, securityCode);
-                //System.out.println("Login successful!\n");
-            } catch (InvalidLoginException ex) {
-                System.out.println("Invalid login: " + ex.getMessage() + "\n");
-                throw new InvalidLoginException();
-            }
+            currentPatientEntity = patientEntityControllerRemote.patientLogin(identityNumber, password);
+            //System.out.println("Login successful!\n");
+        } catch (InvalidLoginException ex) {
+            System.out.println("Invalid login: " + ex.getMessage() + "\n");
+            throw new InvalidLoginException();
+        }
         
-         System.out.println("*** AMS Client :: Main ***\n");    
-            System.out.println("You are login as " + currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + "\n");
-            System.out.println("1: View Appointments");
-            System.out.println("2: Add Appointment");
-            System.out.println("3: Cancel Appointment");
-            System.out.println("4: Logout\n");
+        System.out.println("*** AMS Client :: Main ***\n");    
+        System.out.println("You are login as " + currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + "\n");
+        System.out.println("1: View Appointments");
+        System.out.println("2: Add Appointment");
+        System.out.println("3: Cancel Appointment");
+        System.out.println("4: Logout\n");
         
          return "Login successful";
     }
@@ -128,23 +150,6 @@ public class AMSWebService {
             System.out.println("An error has occurred while retrieving patient: " + ex.getMessage() + "\n");
         }
         System.out.println("Appointments:");
-        /*List<AppointmentEntity> appointmentEntities = appointmentEntityControllerRemote.retrieveAllAppointments();
-        System.out.printf("%s%s%s%s\n", "Id|", "Date      |", "Time  |", "Doctor" );
-        
-        DateFormat df = new SimpleDateFormat("HH:mm");
-        DateFormat datef = new SimpleDateFormat("yyyy-MM-dd");
-        
-        if (appointmentEntities != null) {
-        for (AppointmentEntity appointmentEntity:appointmentEntities)
-        {
-            if (appointmentEntity.getPatient().getIdentityNumber().equals(identityNumber)) {
-            System.out.printf("%s%s%s%s\n", appointmentEntity.getAppointmentId().toString(), "| " + datef.format(appointmentEntity.getDate()), "| " + df.format(appointmentEntity.getTime()), "| " + appointmentEntity.getDoctor().getFirstName() + " " + appointmentEntity.getDoctor().getLastName());
-            }
-        }
-        } else {
-            System.out.println("No appointments made.");
-        }
-        System.out.println();*/
          
         return appointmentEntityControllerRemote.retrieveAllAppointments();
     }
@@ -153,9 +158,9 @@ public class AMSWebService {
      * Web service operation
      */
     @WebMethod(operationName = "addAppointment")
-    public AppointmentEntity addAppointment(@WebParam(name = "identityNumber") String identityNumber, @WebParam(name = "securityCode") String securityCode, @WebParam(name = "doctorId") long doctorId, @WebParam(name = "inputDate") String inputDate, @WebParam(name = "inputTime") String inputTime) {
+    public AppointmentEntity addAppointment(@WebParam(name = "identityNumber") String identityNumber, @WebParam(name = "password") String password, @WebParam(name = "doctorId") long doctorId, @WebParam(name = "inputDate") String inputDate, @WebParam(name = "inputTime") String inputTime) throws CreateAppointmentException {
         
-         System.out.println("*** AMS Client :: Add Appointment ***\n");
+        System.out.println("*** AMS Client :: Add Appointment ***\n");
         AppointmentEntity newAppointmentEntity = new AppointmentEntity();
         Date currentDate = new Date();
         DoctorEntity currentDoctorEntity = new DoctorEntity();
@@ -239,23 +244,26 @@ public class AMSWebService {
                 System.out.println("An error has occurred while retrieving date: " + ex.getMessage() + "\n");
             }
         
-        newAppointmentEntity.setAppointmentId((long)appointments.size() + 1);
-        
-        //add appointment
-        appointmentEntityControllerRemote.createAppointment(newAppointmentEntity, currentPatientEntity.getIdentityNumber(), doctorId);
-        System.out.println("Appointment: " + currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " and " + currentDoctorEntity.getFirstName() + " " + currentDoctorEntity.getLastName() + " at " + inputTime + " on " + inputDate + " has been added.");
-        System.out.println();
+            newAppointmentEntity.setAppointmentId((long)appointments.size() + 1);
+                //add appointment
+                try{
+                    appointmentEntityControllerRemote.createAppointment(newAppointmentEntity, currentPatientEntity.getIdentityNumber(), doctorId);
+                    System.out.println("Appointment: " + currentPatientEntity.getFirstName() + " " + currentPatientEntity.getLastName() + " and " + currentDoctorEntity.getFirstName() + " " + currentDoctorEntity.getLastName() + " at " + inputTime + " on " + inputDate + " has been added.");
+                    System.out.println();
                     
-                } else {
-                    System.out.println("Appointment can only be booked at least one day in advanced!");
+
+                } catch (CreateAppointmentException ex) {
+                    System.out.println(ex.getMessage() + "Appointment can only be booked at least one day in advanced!");
                 }
 
-            } catch (ParseException ex) {
+            }
+        } catch (ParseException ex) {
                 System.out.println("An error has occurred while retrieving date: " + ex.getMessage() + "\n");
+            } catch (UnknownPersistenceException ex){
+                System.out.println(ex.getMessage());
             }
         return newAppointmentEntity;
     }
-
     /**
      * Web service operation
      */

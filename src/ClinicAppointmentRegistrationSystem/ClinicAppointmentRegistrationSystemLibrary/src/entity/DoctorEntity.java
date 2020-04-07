@@ -12,13 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import util.exception.DoctorRemoveAppointmentException;
-import util.exception.LeaveApplicationException;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Entity
 public class DoctorEntity implements Serializable {
@@ -28,25 +29,33 @@ public class DoctorEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long doctorId;
+    @NotNull
+    @Size(min = 1, max = 32)
     @Column(length = 32, nullable = false)
     private String firstName;
+    @NotNull
+    @Size(min = 1, max = 32)
     @Column(length = 32, nullable = false)
     private String lastName;
-    @Column(length = 32, nullable = false)
+    @NotNull
+    @Size(min = 6, max = 6)
+    @Column(length = 6, nullable = false)
     private String registration;
-    @Column(length = 32, nullable = false)
+    @NotNull
+    @Size(min = 1, max = 20)
+    @Column(length = 20, nullable = false)
     private String qualifications;
 
-    @OneToMany(mappedBy = "consultingDoctor")
+    @OneToMany(mappedBy = "doctorC", fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     private List<ConsultationEntity> consultationEntities;
 
+    @OneToMany(mappedBy = "doctorA",fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
-    @OneToMany(mappedBy = "appointmentDoctor")
     private List<AppointmentEntity> appointmentEntities;
     
+    @OneToMany(mappedBy = "doctorL",fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
-    @OneToMany(mappedBy = "leaveDoctor")
     private List<LeaveEntity> leaveEntities;
 
     public DoctorEntity() {
@@ -63,16 +72,6 @@ public class DoctorEntity implements Serializable {
         this.registration = registration;
         this.qualifications = qualifications;
     }
-//
-//    public DoctorEntity(Long doctorId, String firstName, String lastName, String registration, String qualifications) {
-//        this();
-//
-//        this.doctorId = doctorId;
-//        this.firstName = firstName;
-//        this.lastName = lastName;
-//        this.registration = registration;
-//        this.qualifications = qualifications;
-//    }
 
     @Override
     public int hashCode() {
@@ -164,33 +163,5 @@ public class DoctorEntity implements Serializable {
 
     public void setLeaveEntities(List<LeaveEntity> leaveEntities) {
         this.leaveEntities = leaveEntities;
-    }
-    
-    public void addAppointment(AppointmentEntity appointment) {
-//        if (appointment != null && !this.getAppointmentEntities().contains(appointment)) {
-            this.getAppointmentEntities().add(appointment);
-//        } else {
-//            throw new DoctorAddAppointmentException("Appointment already added to Doctor");
-//        }
-    }
-
-    public void removeAppointment(AppointmentEntity appointment) {
-//        if (appointment != null && this.appointmentEntities.contains(appointment)) {
-            this.getAppointmentEntities().remove(appointment);
-//        } else {
-//            throw new DoctorRemoveAppointmentException("Appointment has not been added to Doctor");
-//        }
-    }
-    
-    public void addConsultation(ConsultationEntity consultation) {
-//        if (consultation != null && !this.getConsultationEntities().contains(consultation)) {
-            this.getConsultationEntities().add(consultation);
-//        } else {
-//            throw new DoctorAddConsultationException("Consultation already added to Doctor");
-//        }
-    }
-    
-    public void addLeave(LeaveEntity leaveEntity) {
-        this.getLeaveEntities().add(leaveEntity);      
     }
 }
