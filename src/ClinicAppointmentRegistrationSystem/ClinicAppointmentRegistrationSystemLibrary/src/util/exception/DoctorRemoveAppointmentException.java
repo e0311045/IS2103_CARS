@@ -7,12 +7,12 @@
  */
 package util.exception;
 
-public class StaffNotFoundException extends Exception {
-    
-    public StaffNotFoundException() {
+public class DoctorRemoveAppointmentException extends Exception {
+
+    public DoctorRemoveAppointmentException() {
     }
 
-    public StaffNotFoundException(String msg) {
+    public DoctorRemoveAppointmentException(String msg) {
         super(msg);
     }
 }
