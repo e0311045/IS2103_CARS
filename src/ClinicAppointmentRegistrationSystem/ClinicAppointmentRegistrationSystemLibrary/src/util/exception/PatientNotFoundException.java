@@ -1,9 +1,8 @@
 /*
- * Group 3 IS2103 Assignment 2
+ * Group 11 IS2103 Pair Project
  * Group members:
- * - Loon Hai Qi , A0160483H
- * - Madeline Tooh Weiping , A0160349E
- * - Nurul Afiqah Binte Rashid , A0160361R
+ * - Gerwin Lee , A0184250L 
+ * - Ng Shei Er , A0185574R
  * 
  */
 package util.exception;
