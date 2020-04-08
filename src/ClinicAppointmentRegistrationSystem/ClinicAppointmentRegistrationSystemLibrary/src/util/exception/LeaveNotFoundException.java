@@ -1,9 +1,7 @@
 /*
- * Group 11 IS2103 Pair Project
- * Group members:
- * - Gerwin Lee , A0184250L 
- * - Ng Shei Er , A0185574R
- * 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package util.exception;
 
