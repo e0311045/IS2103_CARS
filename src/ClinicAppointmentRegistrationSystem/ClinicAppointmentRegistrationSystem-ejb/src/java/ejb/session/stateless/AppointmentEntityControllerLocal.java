@@ -14,7 +14,7 @@ import util.exception.AppointmentNotFoundException;
 
 public interface AppointmentEntityControllerLocal {
 
-    void createAppointment(AppointmentEntity newAppointmentEntity, String identityNumber, Long doctorId);
+    Long createAppointment(AppointmentEntity newAppointmentEntity, String identityNumber, Long doctorId);
 
     List<AppointmentEntity> retrieveAllAppointments();
 

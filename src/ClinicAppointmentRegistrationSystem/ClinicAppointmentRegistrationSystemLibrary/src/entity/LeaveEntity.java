@@ -12,6 +12,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Future;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 
 @Entity
@@ -22,10 +25,13 @@ public class LeaveEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long leaveId;
     
+    @Future
     @Temporal(TemporalType.DATE)
     @Column(nullable = false)    
     private Date leaveDate; //Format Kept YYYY-MM-DD
     
+    @NotNull
+    @Size(min = 1, max = 2)
     @Column(length = 2, nullable = false)
     private int weekNo;
     
@@ -36,10 +42,9 @@ public class LeaveEntity implements Serializable {
     public LeaveEntity() {
     }
 
-    public LeaveEntity(Date leaveDate, int weekNo, DoctorEntity onLeaveDoctor) {
+    public LeaveEntity(Date leaveDate, int weekNo) {
         this.leaveDate = leaveDate;
         this.weekNo = weekNo;
-        this.leaveDoctor = onLeaveDoctor;
     }
       
     

@@ -17,29 +17,47 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Entity
 public class PatientEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(length = 9, unique = true, nullable = false)
+    @NotNull
+    @Size(min = 1, max = 25)
+    @Column(length = 25, unique = true, nullable = false)
     private String identityNumber;
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long patientId;
-    @Column(length = 32, nullable = false)
-    private String password;
+    
+    @NotNull
+    @Size(min = 1, max = 32)
     @Column(length = 32, nullable = false)
     private String firstName;
+    @NotNull
+    @Size(min = 1, max = 32)
     @Column(length = 32, nullable = false)
     private String lastName;
+    @NotNull
+    @Size(min = 1, max = 1)
     @Column(length = 1, nullable = false)
     private char gender;
+    @NotNull
+    @Size(min = 6, max = 6)
+    @Column(length = 50, nullable = false)
+    private String password;
+    @NotNull
+    @Size(min = 1, max = 3)
     @Column(length = 3, nullable = false)
     private Integer age;
-    @Column(length = 15, nullable = false)
+    @NotNull
+    @Size(min = 8, max = 8)
+    @Column(length = 8, nullable = false)
     private String phone;
-    @Column(length = 50, nullable = false)
+    @Size(min = 0, max = 32)
+    @Column(length = 50, nullable = true)
     private String address;
 
     @OneToMany(mappedBy = "consultingPatient")
@@ -55,15 +73,6 @@ public class PatientEntity implements Serializable {
         this.appointmentEntities = new ArrayList<>();
         this.consultationEntities = new ArrayList<>();
     }
-
-//    public PatientEntity(String firstName, String lastName, String identityNumber, String securityCode) {
-//        this();
-//
-//        this.firstName = firstName;
-//        this.lastName = lastName;
-//        this.identityNumber = identityNumber;
-//        this.securityCode = securityCode;
-//    }
 
     public PatientEntity(String identityNumber, String password, String firstName, String lastName, char gender, Integer age,  String phone, String address) {
         this();
@@ -186,10 +195,6 @@ public class PatientEntity implements Serializable {
     public void setConsultationEntities(List<ConsultationEntity> consultationEntities) {
         this.consultationEntities = consultationEntities;
     }
-
-    public void addConsultation(ConsultationEntity consultation) {
-            this.getConsultationEntities().add(consultation);
-    }
     
     public List<AppointmentEntity> getAppointmentEntities() {
         return appointmentEntities;
@@ -199,13 +204,6 @@ public class PatientEntity implements Serializable {
         this.appointmentEntities = appointmentEntities;
     }
     
-    public void addAppointment(AppointmentEntity appointment) {
-            this.getAppointmentEntities().add(appointment);
 
-    }
-
-    public void removeAppointment(AppointmentEntity appointment) {
-            this.getAppointmentEntities().remove(appointment);
-    }
 
 }

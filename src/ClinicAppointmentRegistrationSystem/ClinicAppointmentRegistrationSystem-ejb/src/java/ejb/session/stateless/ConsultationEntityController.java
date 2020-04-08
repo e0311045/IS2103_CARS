@@ -31,34 +31,36 @@ public class ConsultationEntityController implements ConsultationEntityControlle
     }
 
     @Override
-    public void createConsultation(ConsultationEntity newConsultationEntity, String identityNumber, Long doctorId)// throws PatientAddConsultationException
-    {
+    public Long createConsultation(ConsultationEntity newConsultationEntity, String identityNumber, Long doctorId) {
         em.persist(newConsultationEntity);
-        PatientEntity patient = em.find(PatientEntity.class, identityNumber);
-
-        if (patient != null) {
-            newConsultationEntity.setPatient(patient);
-            patient.addConsultation(newConsultationEntity);
-//            try {
-//                
-//            } catch (PatientAddConsultationException ex) {
-//                Logger.getLogger(ConsultationEntityController.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-        }
-
-        DoctorEntity doctor = em.find(DoctorEntity.class, doctorId);
-
-        if (doctor != null) {
-            newConsultationEntity.setDoctor(doctor);
-            doctor.addConsultation(newConsultationEntity);
-        }
-//            try {
-//                
-//            } catch (DoctorAddConsultationException ex) {
-//                Logger.getLogger(ConsultationEntityController.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
         em.flush();
+        
+        return newConsultationEntity.getConsultationId();
+//        PatientEntity patient = em.find(PatientEntity.class, identityNumber);
+//
+//        if (patient != null) {
+//            newConsultationEntity.setPatient(patient);
+//            patient.addConsultation(newConsultationEntity);
+////            try {
+////                
+////            } catch (PatientAddConsultationException ex) {
+////                Logger.getLogger(ConsultationEntityController.class.getName()).log(Level.SEVERE, null, ex);
+////            }
+//        }
+//
+//        DoctorEntity doctor = em.find(DoctorEntity.class, doctorId);
+//
+//        if (doctor != null) {
+//            newConsultationEntity.setDoctor(doctor);
+//            doctor.addConsultation(newConsultationEntity);
+//        }
+////            try {
+////                
+////            } catch (DoctorAddConsultationException ex) {
+////                Logger.getLogger(ConsultationEntityController.class.getName()).log(Level.SEVERE, null, ex);
+////            }
+////        }
+//        em.flush();
     }
 
     @Override

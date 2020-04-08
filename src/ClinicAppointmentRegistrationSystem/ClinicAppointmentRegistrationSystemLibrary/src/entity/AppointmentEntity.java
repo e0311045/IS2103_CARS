@@ -10,6 +10,7 @@ package entity;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -17,6 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Future;
 
 @Entity
 public class AppointmentEntity implements Serializable {
@@ -26,9 +28,13 @@ public class AppointmentEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long appointmentId;
+    @Future
     @Temporal(TemporalType.DATE)
+    @Column(nullable = false)
     private Date appointmentDate; //Format Kept YYYY-MM-DD
+    @Future
     @Temporal(TemporalType.TIME)
+    @Column(nullable = false)
     private Date appointmentTime; //Format Kept HH:MM
     
     @ManyToOne(optional = false)

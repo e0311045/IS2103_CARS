@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface ConsultationEntityControllerLocal {
 
-    void createConsultation(ConsultationEntity newConsultationEntity, String identityNumber, Long doctorId); //throws PatientAddConsultationException;
+    Long createConsultation(ConsultationEntity newConsultationEntity, String identityNumber, Long doctorId); //throws PatientAddConsultationException;
 
     List<ConsultationEntity> retrieveAllConsultations();
 // void createConsultationInDoctor(ConsultationEntity newConsultationEntity, Long doctorId); // throws DoctorAddConsultationException;

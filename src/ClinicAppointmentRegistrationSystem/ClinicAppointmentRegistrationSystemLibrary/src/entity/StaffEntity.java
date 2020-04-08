@@ -13,6 +13,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Entity
 public class StaffEntity implements Serializable {
@@ -21,13 +23,21 @@ public class StaffEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long staffId;
+    @NotNull
+    @Size(min = 1, max = 16)
     @Column(length = 16, nullable = false)
     private String firstName;
+    @NotNull
+    @Size(min = 1, max = 16)
     @Column(length = 16, nullable = false)
     private String lastName;
+    @NotNull
+    @Size(min = 1, max = 16)
     @Column(length = 32, unique = true)
     private String username;
-    @Column(length = 32, nullable = false)
+    @NotNull
+    @Size(min = 6, max = 6)
+    @Column(length = 6, nullable = false)
     private String password;
 
     public StaffEntity() {

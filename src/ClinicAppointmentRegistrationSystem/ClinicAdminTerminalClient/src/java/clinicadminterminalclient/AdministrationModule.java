@@ -12,6 +12,7 @@ import ejb.session.stateless.DoctorEntityControllerRemote;
 import ejb.session.stateless.LeaveEntityControllerRemote;
 import ejb.session.stateless.PatientEntityControllerRemote;
 import ejb.session.stateless.StaffEntityControllerRemote;
+import entity.AppointmentEntity;
 import entity.StaffEntity;
 import entity.PatientEntity;
 import entity.DoctorEntity;
@@ -23,11 +24,13 @@ import java.util.Scanner;
 import util.date.DateHelper;
 import util.exception.DoctorNotFoundException;
 import util.exception.InvalidDateTimeFormatException;
+import util.exception.LeaveAlreadyExistException;
 import util.exception.LeaveApplicationException;
 import util.exception.LeaveDeniedException;
 import util.exception.MaximumLeaveAppliedException;
 import util.exception.PatientNotFoundException;
 import util.exception.StaffNotFoundException;
+import util.exception.UnknownPersistenceException;
 
 public class AdministrationModule {
     
@@ -529,45 +532,54 @@ public class AdministrationModule {
     
     private void manageDoctorLeave(){
         Scanner scanner = new Scanner(System.in);
+        String dateStr;
+        Date inputDate = new Date();
+        Integer response = 0;
         LeaveEntity newLeaveEntity = new LeaveEntity();
-        
-        System.out.println("*** CARS :: Administration Operation :: Manage Doctor Leave ***\n");  
-        List<DoctorEntity> doctorEntities = doctorEntityControllerRemote.retrieveAllDoctors();
-        System.out.printf("%8s%20s%20s\n", "Doctor ID", "First Name", "Last Name");
-        doctorEntities.forEach((doctorEntity) -> {
-            System.out.printf("%8s%20s%20s\n", doctorEntity.getDoctorId().toString(), doctorEntity.getFirstName(), doctorEntity.getLastName());
-        });
-        DoctorEntity doctorEntity = new DoctorEntity();
 
-        System.out.print("Enter Doctor ID to Apply Leave For > ");
-        Long doctorId = scanner.nextLong();
-        try{
-            doctorEntity = doctorEntityControllerRemote.retrieveDoctorById(doctorId);
-            newLeaveEntity.setLeaveDoctor(doctorEntity);
-        } catch (DoctorNotFoundException ex){
-            System.out.println(ex.getMessage());
-        }           
-           
-        scanner.nextLine();
-        Date date = new Date();
+        currentDoctorEntity = new DoctorEntity();
+        System.out.println("*** CARS :: Administration Operation :: Manage Doctor Leave ***\n");
+        
+        List<DoctorEntity> allDoctorEntities = doctorEntityControllerRemote.retrieveAllDoctors();
+        int totalDoctors = allDoctorEntities.size();
+        
         while(true){
-            System.out.print("Enter Date of Leave > ");
-            String inputDate = scanner.nextLine();
-            try{
-                date = DateHelper.convertToDate(inputDate);
-                newLeaveEntity.setLeaveDate(date);
+            System.out.printf("%8s%32s%32s\n", "Doctor ID", "First Name", "Last Name");
+            for(DoctorEntity doctorEntity : allDoctorEntities){
+                System.out.printf("%8s%32s%32s\n", doctorEntity.getDoctorId().toString()
+                                , doctorEntity.getFirstName(), doctorEntity.getLastName());
+            }          
+            System.out.print("Enter Doctor Id to be Deleted> ");
+            response = scanner.nextInt();
+            
+            if(response >= 1 && response <= totalDoctors){        
                 break;
-            } catch (InvalidDateTimeFormatException ex){
+            } else {
+                System.out.println("Invalid option, please try again!\n");
+            }
+        }
+        scanner.nextLine();      
+        System.out.println();
+        
+        while(true){
+            try{
+                System.out.print("Enter Date of Leave (eg. 2020-04-01) > ");
+                dateStr = scanner.nextLine();
+                inputDate = DateHelper.convertToDate(dateStr);
+                break;
+            } catch (InvalidDateTimeFormatException ex) {
                 System.out.println(ex.getMessage());
             }
         }
-        newLeaveEntity.setWeekNo(DateHelper.getWeekNo(date));
-        try{           
-            newLeaveEntity = leaveEntityControllerRemote.createNewLeave(newLeaveEntity);
-            System.out.println("New Leave Applied Successfully For: " + newLeaveEntity.getLeaveDoctor().getFirstName() + " " + newLeaveEntity.getLeaveDoctor().getLastName() + " on " + date.toString() +"\n");
-        } catch (LeaveDeniedException | LeaveApplicationException | MaximumLeaveAppliedException ex) {
-            System.out.println(ex.getMessage());
-        }
+        try{
+            Calendar now = Calendar.getInstance();
+            newLeaveEntity.setLeaveDate(inputDate);
+            newLeaveEntity.setWeekNo(DateHelper.getWeekNo(inputDate));
+            Long leaveId = leaveEntityControllerRemote.createNewLeave(newLeaveEntity, now.getTime());
+            System.out.println("New Leave "+ leaveId+ " Successfully created!\n");              
+            } catch (LeaveApplicationException | LeaveAlreadyExistException ex){
+                System.out.println(ex.getMessage());
+            }
     }
 
     private void addStaff() {

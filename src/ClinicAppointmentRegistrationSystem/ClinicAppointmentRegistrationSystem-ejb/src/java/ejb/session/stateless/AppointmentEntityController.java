@@ -34,31 +34,15 @@ public class AppointmentEntityController implements AppointmentEntityControllerL
     }
 
     @Override
-    public void createAppointment(AppointmentEntity newAppointmentEntity, String identityNumber, Long doctorId) {
+    public Long createAppointment(AppointmentEntity newAppointmentEntity, String identityNumber, Long doctorId) {
         em.persist(newAppointmentEntity);
-        PatientEntity patient = em.find(PatientEntity.class, identityNumber);
+        em.flush();
+//        PatientEntity patient = em.find(PatientEntity.class, identityNumber);
+//        DoctorEntity doctor = em.find(DoctorEntity.class, doctorId);
+        return newAppointmentEntity.getAppointmentId();
+        
 
-        if (patient != null) {
-            newAppointmentEntity.setPatient(patient);
-            patient.addAppointment(newAppointmentEntity);
-//            try {
-//                
-//            } catch (PatientAddAppointmentException ex) {
-//                Logger.getLogger(AppointmentEntityController.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-        }
 
-        DoctorEntity doctor = em.find(DoctorEntity.class, doctorId);
-
-        if (doctor != null) {
-            newAppointmentEntity.setDoctor(doctor);
-            doctor.addAppointment(newAppointmentEntity);
-//            try {
-//                
-//            } catch (DoctorAddAppointmentException ex) {
-//                Logger.getLogger(AppointmentEntityController.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-        }
     }
 
     @Override
